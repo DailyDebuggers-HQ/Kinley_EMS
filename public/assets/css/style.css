@@ -1,0 +1,110 @@
+/* ===== GENERAL LAYOUT ===== */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: #f5f6f8;
+    color: #333;
+}
+
+
+.container {
+    padding: 20px;
+    max-width: 1100px;
+    margin: auto;
+}
+
+
+h2 {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+p {
+    margin-top: 0;
+    color: #666;
+}
+
+
+.cards {
+    display: flex;
+    gap: 20px;
+    margin: 25px 0;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    border: 1px solid #ddd;
+    flex: 1;
+    text-align: center;
+    transition: 0.2s;
+}
+
+.card:hover {
+    background: #e9ecf0;
+}
+
+
+.table-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    margin-top: 20px;
+}
+
+.table-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-container th {
+    background: #f0f0f0;
+    padding: 12px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.table-container td {
+    padding: 10px;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+
+.table-container tr:hover td {
+    background: #f7f7f7;
+}
+
+/* ===== LINKS ===== */
+a {
+    color: #3b4cca;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.headContainer {
+    background-color: #acf6eab3;
+    border: 1px solid black;
+    padding:10px;
+}
+.headerLinks {
+    display: flex;
+    align-items: center;
+}
+
+.headerLinks .left-links {
+    display: flex;
+    gap: 20px;
+}
+
+.headerLinks .logout {
+    margin-left: auto;
+}

@@ -1,0 +1,81 @@
+/* ===== GENERAL ===== */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: #f5f6f8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* ===== LOGIN CARD ===== */
+.login {
+    background: white;
+    padding: 35px 40px;
+    border-radius: 12px;
+    width: 350px;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+    border: 1px solid #e4e4e4;
+}
+
+.login h2 {
+    margin-top: 0;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+/* ===== INPUT FIELDS ===== */
+.login label {
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.login input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.login input:focus {
+    border-color: #3b4cca;
+    outline: none;
+}
+
+/* ===== ERROR MESSAGE ===== */
+.error {
+    color: #d63031;
+    background: #ffeaea;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ffb4b4;
+    font-size: 14px;
+}
+
+/* ===== BUTTON ===== */
+.login button {
+    width: 100%;
+    padding: 11px;
+    background: #3b4cca;
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.login button:hover {
+    background: #2f3ea5;
+}
