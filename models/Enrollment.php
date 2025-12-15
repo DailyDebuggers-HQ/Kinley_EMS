@@ -15,6 +15,20 @@ class Enrollment {
     }
 
 
+    public static function getByStudent ($conn, $studentID){
+        $stmt = $conn-> prepare ("
+        SELECT c.courseName, e.grades
+        FROM enrollment e
+        JOIN course c on e.courseCode = c.courseCode
+        where e.studentID = ?
+        order by c.courseName");
+
+        $stmt->bind_param("i", $studentID);
+        $stmt->execute();
+        return $stmt->get_result();
+    }
+
+
     public static function find($conn, $enroll_id) {
         $stmt = $conn->prepare("SELECT * from enrollment where enroll_id = ?");
         $stmt->bind_param("i", $enroll_id);

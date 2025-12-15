@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST"){
 
                 <div class="buttons">
                     <button type="submit">Add Student</button>
-                    <button type="button" onclick="window.location.href='/enrollment_system/public/index.php'" style="cursor: pointer;">Back to Students List</button>
+                    <button type="button" onclick="window.location.href='/enrollment_system/public/index.php'">Back to Students List</button>
                 </div>
             </form>
         </div>

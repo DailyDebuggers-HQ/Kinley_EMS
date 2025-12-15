@@ -11,12 +11,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (Enrollment::isEnrolled($conn, $studentID, $courseCode)) {
             // Student is already enrolled in the course
-            header("Location: /enrollment_system/public/enrollments/add.php?error=already_enrolled");
+            header("Location: /enrollment_system/public/enrollment/add_enrollment.php?error=already_enrolled");
             exit();
         }
 
         Enrollment::create($conn, $studentID, $courseCode, $grades);
-        header("Location: /enrollment_system/public/enrollments/index.php");
+        header("Location: /enrollment_system/public/enrollment/add_enrollment.php?success=enrolled");
         exit();
     }
 }

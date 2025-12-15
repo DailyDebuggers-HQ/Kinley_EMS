@@ -17,7 +17,7 @@ $result = Student::all($conn);
     <div class="cards">
         <a class="card" href="/enrollment_system/public/students/add_students.php">Add Students</a>
         <a class="card" href="/enrollment_system/public/courses/add_courses.php">Add Courses</a>
-        <a class="card" href="/enrollment_system/public/enrollments/index.php">Manage Enrollments</a>
+        <a class="card" href="/enrollment_system/public/enrollment/add_enrollment.php">Manage Enrollments</a>
     </div>
 
     <div class="table-container">
@@ -37,7 +37,7 @@ $result = Student::all($conn);
                     <td><?= $row['lastname'] ?></td>
                     <td><?= $row['firstname'] ?></td>
                     <td>
-                        <a href="viewHistory.php?studentID=<?= $row['studentID'] ?>">View History</a>
+                        <a href="/enrollment_system/public/students/history.php?studentID=<?= $row['studentID'] ?>">View History</a>
                     </td>
                 </tr>
             <?php endwhile; ?>
