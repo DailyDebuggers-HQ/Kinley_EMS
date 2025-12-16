@@ -1,46 +1,84 @@
-CREATE DATABASE IF NOT EXISTS enrollmentSystem24;
+CREATE DATABASE IF NOT EXISTS enrollmentSys24;
 
-use enrollmentSystem24;
+use enrollmentSys24;
 
 
 CREATE TABLE students (
-    studentID varchar(8) not null primary key,
-    firstname varchar(30) not null,
+    id int auto_increment primary key,
     lastname varchar(30) not null,
-    middlename varchar(30) not null,
-    email varchar(100) not null
+    firstname varchar(30) not null,
+    middlename varchar(30),
+    age tinyint unsigned not null
 );
 
-CREATE TABLE programs (
-    programCode varchar(10) not null primary key,
-    programName varchar(8) not null,
-    department varchar(30) not null
+CREATE TABLE curriculum (
+    curID int auto_increment primary key,
+    subjectCode varchar(8) not null unique,
+    semester varchar(1) not null,
+    yearlevel varchar(1) not null,
+    subdescription varchar(50) not null,
+    units tinyint unsigned not null
 );
 
-CREATE TABLE subjects (
-    subjectCode varchar(10) not null primary key,
-    subjectName varchar(50) not null,
-    units int not null,
-    programCode varchar(10) not null,
+CREATE TABLE subjects_enrolled (
+    enrID int auto_increment primary key,
+    student_id int not null,
+    curID int not null,
+    enrolled_date date,
 
-    foreign key (programCode) references programs(programCode)
+    foreign key (student_id) references students(id),
+    foreign key (curID) references curriculum(curID)
 );
 
-CREATE TABLE enrollment (
-    enrollID int auto_increment primary key,
-    studentID varchar(8) not null,
-    subjectCode varchar(10) not null,
-    schoolYear varchar(15) not null,
-    date_enrolled timestamp default current_timestamp,
-    FOREIGN KEY (studentID) references students(studentID),
-    FOREIGN KEY (subjectCode) references subjects(subjectCode)
+CREATE TABLE course (
+    courseID int auto_increment primary key,
+    courseName varchar(5) not null,
+    courseDesc varchar(255) not null
 );
 
-CREATE TABLE enrolled_subs(
-    enrolledsubsID int auto_increment primary key,
-    enrollID int not null,
-    subjectCode varchar(10) not null,
+INSERT INTO students (lastname, firstname, middlename, age) VALUES
+('Lavina24', 'Jhon', 'Mcberry', 18),
+('Reyes24', 'Junrick', NULL, 19),
+('Cano24', 'Jay Patrick', 'Montreal', 20),
+('Baltazar24', 'Leslie', NULL, 18),
+('Villaranda24', 'Rainy', 'Amour', 21),
+('Picorro24', 'Joana', NULL, 19),
+('Ganolo24', 'Isaac', 'Santos', 20),
+('Calucin24', 'Mark', NULL, 18),
+('Lavina24', 'Evangeline', 'Cruz', 22),
+('Android24', 'Benson', NULL, 19),
+('Pascual24', 'Paolo', 'Fernandez', 21),
+('Poe24', 'Fernando', NULL, 20),
+('Poe24', 'Grace', 'Gomez', 18),
+('Enriquez24', 'Mike', NULL, 19),
+('Villaruel24', 'Claire', 'Castro', 22),
+('Salamanca24', 'Bianca', NULL, 20),
+('Chuandez24', 'Milky', 'Tan', 21),
+('Velasco24', 'Patricia', NULL, 18),
+('Egido24', 'Joshua', 'Manalo', 19),
+('Estrada24', 'Joseph', NULL, 20),
+('Henley24', 'Joseph', 'Cadayona', 25);
 
-    foreign key (enrollID) references enrollment(enrollID),
-    foreign key (subjectCode) references subjects(subjectCode)
-);
+INSERT INTO curriculum (subjectCode, semester, yearlevel, subdescription, units) VALUES
+('CS301', '1', '3', 'Information Assurance and Security', 3),
+('CS302', '1', '3', 'Platform Technologies', 3),
+('CS303', '1', '3', 'Discrete Structures 2', 3),
+('CS304', '1', '3', 'Algorithms and Complexity', 3),
+('CS305', '1', '3', 'Software Engineering 1', 3),
+('CS306', '1', '3', 'Business Analytics', 3),
+('CS307', '1', '3', 'Enterprise Data Management', 3),
+('THEO3A', '1', '3', 'Christian Morality', 3),
+('CS311', '2', '3', 'Analytics Tools and Techniques', 3),
+('CS312', '2', '3', 'Analytics Modeling', 3),
+('CS313', '2', '3', 'Social Issues and Professional Practice', 3),
+('CS314', '2', '3', 'Operating Systems', 3),
+('CS315', '2', '3', 'Software Engineering 2', 3),
+('CS316', '2', '3', 'Programming Languages', 3),
+('CSEL1', '2', '3', 'CS ELECTIVE 1', 3),
+('THEO3B', '2', '3', 'The Commandments', 3),
+('THESIS1', '0', '3', 'Thesis Writing 1', 3),
+('THEO4A', '0', '3', 'Intro to Pastoral Life/BEC', 3),
+('THESIS2', '1', '4', 'Thesis Writing 2', 3),
+('CS401', '1', '4', 'Automata Theory and Formal Languages', 3),
+('CS402', '1', '4', 'Analytics Application', 3),
+('CS403', '1', '4', 'Professional Enhancement', 3);
