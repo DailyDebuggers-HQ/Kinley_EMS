@@ -39,22 +39,3 @@ body {
     font-size: 14px;
     box-sizing: border-box;
 }
-
-.buttons {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.add-container button {
-    cursor: pointer;
-    margin: 10px;
-    border: 1px solid black;
-    color: white;
-    background-color: rgb(5, 62, 141);
-    font-size: 18px;
-}
-
-.add-container button:hover {
-    background-color: rgb(119, 119, 249);
-}

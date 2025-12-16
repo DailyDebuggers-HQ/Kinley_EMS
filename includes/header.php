@@ -17,9 +17,8 @@ if (session_status() === PHP_SESSION_NONE) {
         <div class="headContainer">
             <nav class="headerLinks">
                 <div class="left-links">
-                    <a href="/enrollment_system/public/students/">Students</a>
-                    <a href="/enrollment_system/public/courses/">Courses</a>
-                    <a href="/enrollment_system/public/enrollment/">Enrollment</a>
+                    <a href="/enrollment_system/public/students/index.php">Students</a>
+                    <a href="/enrollment_system/public/curriculum/index.php">Curriculum</a>
                 </div>
 
                 <a class="logout" href="/enrollment_system/public/logout.php">Logout</a>
