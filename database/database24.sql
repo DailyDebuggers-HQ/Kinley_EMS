@@ -32,8 +32,8 @@ CREATE TABLE subjects_enrolled (
 
 CREATE TABLE course (
     courseID int auto_increment primary key,
-    courseName varchar(5) not null,
-    courseDesc varchar(255) not null
+    courseName varchar(10) not null unique,
+    courseDesc varchar(255) not null unique
 );
 
 INSERT INTO students (lastname, firstname, middlename, age) VALUES
@@ -82,3 +82,19 @@ INSERT INTO curriculum (subjectCode, semester, yearlevel, subdescription, units)
 ('CS401', '1', '4', 'Automata Theory and Formal Languages', 3),
 ('CS402', '1', '4', 'Analytics Application', 3),
 ('CS403', '1', '4', 'Professional Enhancement', 3);
+
+INSERT INTO course (courseName, courseDesc) VALUES
+('CS', 'Bachelor of Science in Computer Science'),
+('IT', 'Bachelor of Science in Information Technology'),
+('MBA', 'Masters of Business Administration'),
+('PHILO', 'Bachelor of Arts in Philosophy'),
+('Polsci', 'Bachelor of Arts in Political Science'),
+('BEED', 'Bachelor of Elementary Education'),
+('BSA', 'Bachelor of Science in Accountancy'),
+('CE', 'Bachelor of Science in Civil Engineering'),
+('ARC', 'Bachelor of Science in Architecture'),
+('CRIM', 'Bachelor of Science in Criminology'),
+('HM', 'Bachelor of Science in Hospitality Management'),
+('NUR', 'Bachelor of Science in Nursing'),
+('OA', 'Bachelor of Science in Office Administration'),
+('TM', 'Bachelor of Science in Tourism Management');
