@@ -19,6 +19,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 <div class="left-links">
                     <a href="/enrollment_system/public/students/index.php">Students</a>
                     <a href="/enrollment_system/public/curriculum/index.php">Curriculum</a>
+                    <a href="/enrollment_system/public/course/index.php">Courses</a>
                 </div>
 
                 <a class="logout" href="/enrollment_system/public/logout.php">Logout</a>
