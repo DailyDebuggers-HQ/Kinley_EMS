@@ -33,7 +33,28 @@ CREATE TABLE subjects_enrolled (
 CREATE TABLE course (
     courseID int auto_increment primary key,
     courseName varchar(10) not null unique,
-    courseDesc varchar(255) not null unique
+    courseDesc varchar(255) not null
+);
+
+CREATE TABLE student_programs (
+    studProgID int auto_increment primary key,
+    student_id int not null,
+    courseID int not null,
+    startDate date not null,
+    end_date date default null,
+    status enum('ACTIVE', 'TERMINATED', 'TRANSFERRED') not null,
+
+    foreign key (student_id) references students(id),
+    foreign key (courseID) references course(courseID)
+);
+
+CREATE TABLE course_curriculum (
+    courCurID int auto_increment primary key,
+    courseID int not null,
+    curID int not null,
+
+    foreign key (courseID) references course(courseID),
+    foreign key (curID) references curriculum(curID)
 );
 
 INSERT INTO students (lastname, firstname, middlename, age) VALUES
@@ -81,7 +102,9 @@ INSERT INTO curriculum (subjectCode, semester, yearlevel, subdescription, units)
 ('THESIS2', '1', '4', 'Thesis Writing 2', 3),
 ('CS401', '1', '4', 'Automata Theory and Formal Languages', 3),
 ('CS402', '1', '4', 'Analytics Application', 3),
-('CS403', '1', '4', 'Professional Enhancement', 3);
+('CS403', '1', '4', 'Professional Enhancement', 3),
+('IT101', '1', '1', 'Intro to Computing', 3),
+('IT102', '1', '1', 'Computer Programming 1', 3);
 
 INSERT INTO course (courseName, courseDesc) VALUES
 ('CS', 'Bachelor of Science in Computer Science'),
@@ -98,3 +121,14 @@ INSERT INTO course (courseName, courseDesc) VALUES
 ('NUR', 'Bachelor of Science in Nursing'),
 ('OA', 'Bachelor of Science in Office Administration'),
 ('TM', 'Bachelor of Science in Tourism Management');
+
+insert into course_curriculum (courseID, curID)
+VALUES (1, 1),
+(1,2),
+(1,3),
+(1,4),
+(1,5),
+(1,6),
+(1,7),
+(2,23),
+(2,24);

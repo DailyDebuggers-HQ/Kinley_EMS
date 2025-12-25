@@ -5,10 +5,10 @@ require_once __DIR__ . "/../models/Curriculum.php";
 
 class CurriculumController {
     public static function add($conn, $subjectCode, $semester, $yearlevel, $subdescription, $units){
-        if (Curriculum::exists($conn, $subjectCode, $semester, $yearlevel, $subdescription, $units)){
+        if (Curriculum::exists($conn, $subjectCode)){
             return [
                 "status"=> "error",
-                "message"=> "Curriculum already exists!"
+                "message"=> "Subject Code already exists!"
             ];
         }
 
