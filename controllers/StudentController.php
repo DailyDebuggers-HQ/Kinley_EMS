@@ -24,4 +24,12 @@ class StudentController {
             "message"=> "Error adding student."
         ];
     }
+
+    public static function studentInfo ($conn, $studentID) {
+        return Student::getStudentInfo($conn, $studentID);
+    }
+
+    public static function studentHist($conn, $studentID) {
+        return Student::studentHistory($conn, $studentID);
+    }
 }

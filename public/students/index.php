@@ -17,7 +17,6 @@ $toggleOrder = ($order === "ASC") ? 'desc' : 'asc';
     </div>
     <table>
         <tr>
-            <th>Student ID</th>
             <th>Last Name
                 <a href="?sort=<?= $toggleOrder ?>" style="text-decoration: none; font-size: 0.9em;"><?= ($order === 'ASC') ? '▲' : '▼' ?></a>
             </th>
@@ -32,7 +31,6 @@ $toggleOrder = ($order === "ASC") ? 'desc' : 'asc';
         ?>
 
         <tr>
-            <td><?= $row['id'] ?></td>
             <td><?= $row['lastname'] ?></td>
             <td><?= $row['firstname'] ?></td>
             <td><?= $row['middlename'] ?></td>

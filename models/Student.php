@@ -33,4 +33,28 @@ class Student {
         $stmt->bind_param("sssi", $lastname, $firstname, $middlename, $age);
         return $stmt->execute();
     }
+
+    public static function getStudentInfo($conn, $studentID) {
+        $sql = "SELECT st.firstname, st.lastname, st.middlename, co.courseDesc
+                FROM student_programs sp
+                JOIN students st ON sp.student_id = st.id
+                JOIN course co ON sp.courseID = co.courseID
+                WHERE sp.student_id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $studentID);
+        $stmt->execute();
+        return $stmt->get_result();
+    }
+
+    public static function studentHistory($conn, $studentID) {
+        $sql = "SELECT se.subEnID, cu.subjectCode, cu.subdescription, se.midterm, se.final, cu.units
+                FROM sub_enrolled se
+                JOIN student_programs sp ON se.studProgID = sp.studProgID
+                JOIN curriculum cu ON se.curID = cu.curID
+                WHERE sp.student_id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $studentID);
+        $stmt->execute();
+        return $stmt->get_result();
+    }
 }

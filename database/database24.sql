@@ -20,14 +20,16 @@ CREATE TABLE curriculum (
     units tinyint unsigned not null
 );
 
-CREATE TABLE subjects_enrolled (
-    enrID int auto_increment primary key,
-    student_id int not null,
+CREATE TABLE sub_enrolled (
+    subEnID int auto_increment primary key,
+    studProgID int not null,
     curID int not null,
     enrolled_date date,
+    midterm varchar(4) default null,
+    final varchar(4) default null,
 
-    foreign key (student_id) references students(id),
-    foreign key (curID) references curriculum(curID)
+    constraint fk_sub_enr_studProg foreign key (studProgID) references student_programs(studProgID),
+    constraint fk_sub_enr_cur foreign key (curID) references curriculum(curID)
 );
 
 CREATE TABLE course (
@@ -132,3 +134,17 @@ VALUES (1, 1),
 (1,7),
 (2,23),
 (2,24);
+
+INSERT INTO student_programs (student_id, courseID, startDate, status) VALUES
+(10, 1, '2025-06-01', 'ACTIVE'),
+(1, 1, '2025-06-01', 'ACTIVE');
+
+
+INSERT into sub_enrolled (studProgID, curID, enrolled_date, midterm, final) VALUES
+(1, 1, '2025-06-15', '1.00', '1.25'),
+(1, 2, '2025-06-15', '2.25', '1.00'),
+(1, 3, '2025-06-15', '1.00', '1.00'),
+(2, 5, '2025-06-15', '1.00', '1.25'),
+(2, 6, '2025-06-15', '1.00', '1.25'),
+(2, 7, '2025-06-15', '1.00', '1.25'),
+(2, 8, '2025-06-15', '1.00', '1.25');
