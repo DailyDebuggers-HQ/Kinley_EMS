@@ -46,14 +46,25 @@ class Student {
         return $stmt->get_result();
     }
 
-    public static function studentHistory($conn, $studentID) {
-        $sql = "SELECT se.subEnID, cu.subjectCode, cu.subdescription, se.midterm, se.final, cu.units
+    public static function studentHistory($conn, $studentID, $yearLevel = null) {
+
+        $yearLevel = $_GET['yearlevel'] ?? null;
+        $sql = "SELECT se.subEnID, cu.subjectCode, cu.subdescription, cu.semester, se.midterm, se.final, cu.units
                 FROM sub_enrolled se
                 JOIN student_programs sp ON se.studProgID = sp.studProgID
                 JOIN curriculum cu ON se.curID = cu.curID
                 WHERE sp.student_id = ?";
+        if ($yearLevel) {
+            $sql .= " AND cu.yearlevel = ?";
+        }
+
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $studentID);
+        if ($yearLevel) {
+            $stmt->bind_param("ii", $studentID, $yearLevel);
+        } else {
+            $stmt->bind_param("i", $studentID);
+        }
+        
         $stmt->execute();
         return $stmt->get_result();
     }
