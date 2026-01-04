@@ -21,14 +21,13 @@ $toggleOrder = ($order === "ASC") ? 'desc' : 'asc';
         <a class="card" href="/enrollment_system/public/students/add_students.php">Add Students</a>
         <a class="card" href="/enrollment_system/public/curriculum/add_curriculum.php">Add Curriculum</a>
         <a class="card" href="/enrollment_system/public/course/add_courses.php">Add Courses</a>
-        <a class="card" href="/enrollment_system/public/progress.php">Manage Enrollments</a>
+        <a class="card" href="/enrollment_system/public/progress.php">Enroll Students</a>
     </div>
 
     <div class="table-container">
         <h3>Students List</h3>
         <table>
             <tr>
-                <th>Student ID</th>
                 <th>Last Name
                 <a href="?sort=<?= $toggleOrder ?>" style="text-decoration: none; font-size: 0.9em;"><?= ($order === 'ASC') ? '▲' : '▼' ?></a>
                 </th>
@@ -43,13 +42,12 @@ $toggleOrder = ($order === "ASC") ? 'desc' : 'asc';
             ?>
 
                 <tr>
-                    <td><?= $row['id'] ?></td>
                     <td><?= $row['lastname'] ?></td>
                     <td><?= $row['firstname'] ?></td>
                     <td><?= $row['middlename'] ?></td>
                     <td><?= $row['age'] ?></td>
                     <td>
-                        <a href="/enrollment_system/public/progress.php">View History</a>
+                        <a href="/enrollment_system/public/students/student_history.php?studentID=<?= $row['id'] ?>">View History</a>
                     </td>
                 </tr>
             <?php endwhile; ?>

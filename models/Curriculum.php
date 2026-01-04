@@ -5,19 +5,30 @@ require_once __DIR__ . "/../config/database.php";
 
 class Curriculum {
 
-    public static function all($conn, $order = 'ASC') {
+    public static function all($conn, $order = 'ASC', $courseID = null) {
         $order = strtoupper($order);
-
         if ($order !== 'ASC' && $order !== 'DESC'){
             $order = 'ASC';
         }
 
-        return $conn->query("SELECT * FROM curriculum order by subjectCode $order");
+        if ($courseID) {
+            $sql = "SELECT cu.* FROM curriculum cu 
+                    JOIN course_curriculum cc ON cu.curID = cc.curID 
+                    WHERE cc.courseID = ? 
+                    ORDER BY cu.yearlevel $order, cu.semester $order";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $courseID);
+            $stmt->execute();
+            return $stmt->get_result();
+        } else {
+            return $conn->query("SELECT * FROM curriculum ORDER BY yearlevel $order");
+        }
     }
 
-    public static function exists($conn, $subjectCode, $semester, $yearlevel, $subdescription){
-        $stmt= $conn->prepare("SELECT * from curriculum where subjectCode = ? and semester = ? and yearlevel = ? and subdescription = ?");
-        $stmt->bind_param("ssss", $subjectCode, $semester, $yearlevel, $subdescription);
+
+    public static function exists($conn, $subjectCode){
+        $stmt= $conn->prepare("SELECT * from curriculum where subjectCode = ?");
+        $stmt->bind_param("s", $subjectCode);
         $stmt->execute();
 
         return $stmt->get_result()->num_rows > 0;

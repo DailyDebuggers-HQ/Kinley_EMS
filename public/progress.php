@@ -51,6 +51,7 @@ require_once __DIR__ . '/../includes/auth.php';
 <body>
     <div class="placeholder">
         <h1>PLACEHOLDER</h1>
+        <p>This page is under construction, sir huhu. Perhaps checking out the other ones would be a great idea.</p>
         <a href="/enrollment_system/public/index.php">Return to Dashboard</a>
     </div>
 </body>

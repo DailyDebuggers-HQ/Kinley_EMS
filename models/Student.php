@@ -28,9 +28,62 @@ class Student {
         return $stmt->get_result()->num_rows > 0;
     }
 
-    public static function create($conn, $lastname, $firstname, $middlename, $age) {
-        $stmt = $conn->prepare("INSERT INTO students (lastname, firstname, middlename, age) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("sssi", $lastname, $firstname, $middlename, $age);
-        return $stmt->execute();
+    public static function create($conn, $lastname, $firstname, $middlename, $age, $courseID) {
+        $conn->begin_transaction();
+
+        try{
+            $stmt = $conn->prepare("INSERT INTO students (lastname, firstname, middlename, age) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("sssi", $lastname, $firstname, $middlename, $age);
+            $stmt->execute();
+            $studentID = $stmt->insert_id;
+
+            $stmtProg = $conn->prepare("INSERT INTO student_programs (student_id, courseID) VALUES (?, ?)");
+            $stmtProg->bind_param("ii", $studentID, $courseID);
+            $stmtProg->execute();
+
+            $conn->commit();
+            return true;
+        } catch (Exception $e) {
+            $conn->rollback();
+            return false;
+        }
+    }
+
+    public static function getStudentInfo($conn, $studentID) {
+        $sql = "SELECT st.firstname, st.lastname, st.middlename, co.courseDesc
+                FROM student_programs sp
+                JOIN students st ON sp.student_id = st.id
+                JOIN course co ON sp.courseID = co.courseID
+                WHERE sp.student_id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $studentID);
+        $stmt->execute();
+        return $stmt->get_result();
+    }
+
+    public static function studentHistory($conn, $studentID, $yearLevel = null) {
+
+        $yearLevel = $_GET['yearlevel'] ?? null;
+        $sql = "SELECT se.subEnID, cu.subjectCode, cu.subdescription, cu.semester, se.midterm, se.final, cu.units
+                FROM sub_enrolled se
+                JOIN student_programs sp ON se.studProgID = sp.studProgID
+                JOIN curriculum cu ON se.curID = cu.curID
+                WHERE sp.student_id = ?";
+
+        if ($yearLevel) {
+            $sql .= " AND cu.yearlevel = ?";
+        }
+
+        $sql .= " ORDER BY cu.yearlevel, cu.semester";
+
+        $stmt = $conn->prepare($sql);
+        if ($yearLevel) {
+            $stmt->bind_param("ii", $studentID, $yearLevel);
+        } else {
+            $stmt->bind_param("i", $studentID);
+        }
+        
+        $stmt->execute();
+        return $stmt->get_result();
     }
 }
