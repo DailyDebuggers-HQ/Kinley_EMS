@@ -15,13 +15,13 @@ class Curriculum {
             $sql = "SELECT cu.* FROM curriculum cu 
                     JOIN course_curriculum cc ON cu.curID = cc.curID 
                     WHERE cc.courseID = ? 
-                    ORDER BY cu.subjectCode $order";
+                    ORDER BY cu.yearlevel $order, cu.semester $order";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("i", $courseID);
             $stmt->execute();
             return $stmt->get_result();
         } else {
-            return $conn->query("SELECT * FROM curriculum ORDER BY subjectCode $order");
+            return $conn->query("SELECT * FROM curriculum ORDER BY yearlevel $order");
         }
     }
 

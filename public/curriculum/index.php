@@ -42,14 +42,14 @@ $result = Curriculum::all($conn, $order, $courseFilter);
     </div>
     <table>
         <tr>
-            <th>Subject Code
+            <th>Subject Code</th>
+            <th>Subject Description</th>
+            <th>Year Level
                 <a href="?sort=<?= $toggleOrder ?><?= $courseFilter ? '&courseID=' . $courseFilter : '' ?>" 
                     style="text-decoration: none; font-size: 0.9em;">
                     <?= ($order === 'ASC') ? '▲' : '▼' ?>
                 </a>
             </th>
-            <th>Subject Description</th>
-            <th>Year Level</th>
             <th>Semester</th>
             <th>Units</th>
         </tr>
@@ -62,7 +62,7 @@ $result = Curriculum::all($conn, $order, $courseFilter);
             <td><?= $row['subjectCode'] ?></td>
             <td><?= $row['subdescription'] ?></td>
             <td><?= $row['yearlevel'] ?></td>
-            <td><?= $row['semester'] ?></td>
+            <td><?= $row['semester'] == 0 ? 'Summer' : $row['semester'] ?></td>
             <td><?= $row['units'] ?></td>
         </tr>
         <?php endwhile; ?>

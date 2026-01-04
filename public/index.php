@@ -21,7 +21,7 @@ $toggleOrder = ($order === "ASC") ? 'desc' : 'asc';
         <a class="card" href="/enrollment_system/public/students/add_students.php">Add Students</a>
         <a class="card" href="/enrollment_system/public/curriculum/add_curriculum.php">Add Curriculum</a>
         <a class="card" href="/enrollment_system/public/course/add_courses.php">Add Courses</a>
-        <a class="card" href="/enrollment_system/public/students/enroll_student.php">Enroll Students</a>
+        <a class="card" href="/enrollment_system/public/progress.php">Enroll Students</a>
     </div>
 
     <div class="table-container">

@@ -3,10 +3,13 @@ require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../models/Student.php';
 require_once __DIR__ . '/../../controllers/StudentController.php';
+require_once __DIR__ . '/../../models/Course.php';
 
 
 $message="";
 $status="";
+
+$programsResult = Course::all($conn);
 
 if(isset($_SESSION['message'])){
     $message = $_SESSION['message'];
@@ -18,6 +21,7 @@ $lastname="";
 $firstname="";
 $middlename="";
 $age="";
+$courseID=null;
 
 
 if ($_SERVER['REQUEST_METHOD'] === "POST"){
@@ -25,18 +29,26 @@ if ($_SERVER['REQUEST_METHOD'] === "POST"){
     $firstname = trim($_POST['firstname']);
     $middlename = $_POST['middlename'];
     $age = $_POST['age'];
+    $courseID = intval($_POST['courseID']);
 
-    $result = StudentController::add($conn, $lastname, $firstname, $middlename, $age);
+    if (!$courseID) {
+        $message = "Please select a valid course.";
+        $status = "error";
+    } 
+    else {
 
-    if ($result['status'] === "success"){
-        $_SESSION['message']=$result['message'];
-        $_SESSION['status'] = $result['status'];
-        header("Location: /enrollment_system/public/students/add_students.php");
-        exit();
+        $result = StudentController::add($conn, $lastname, $firstname, $middlename, $age, $courseID);
+
+        if ($result['status'] === "success"){
+            $_SESSION['message']=$result['message'];
+            $_SESSION['status'] = $result['status'];
+            header("Location: /enrollment_system/public/students/add_students.php");
+            exit();
+        }
+
+        $message = $result['message'];
+        $status = $result['status'];
     }
-
-    $message = $result['message'];
-    $status = $result['status'];
 }
 ?>
 
@@ -57,6 +69,12 @@ if ($_SERVER['REQUEST_METHOD'] === "POST"){
                 font-size: large;
                 cursor: pointer;
             }
+
+            select {
+                width: 100%;
+                padding: 5px;
+                margin: 10px 0;
+            }
         </style>
     </head>
 
@@ -70,13 +88,26 @@ if ($_SERVER['REQUEST_METHOD'] === "POST"){
 
             <form method="POST">
                 <label>First Name:</label><br>
-                <input type="text" name="firstname" required><br>
+                <input type="text" name="firstname" required value="<?= htmlspecialchars($firstname) ?>"><br>
                 <label>Last Name:</label><br>
-                <input type="text" name="lastname" required><br>
+                <input type="text" name="lastname" required value="<?= htmlspecialchars($lastname) ?>"><br>
                 <label>Middle Name:</label><br>
-                <input type="text" name="middlename"><br>
+                <input type="text" name="middlename" value="<?= htmlspecialchars($middlename) ?>"><br>
                 <label>Age:</label>
-                <input type="number" name="age" min = "10" max = "200" required><br>
+                <input type="number" name="age" min = "10" max = "200" required value="<?= htmlspecialchars($age) ?>"><br>
+                <label>Course:</label>
+                <select name="courseID" required>
+                    <option value="" disabled <?= is_null($courseID) ? 'selected' : '' ?>>Select Course</option>
+                    <?php
+                    $programsResult->data_seek(0);
+                    while ($course = $programsResult->fetch_assoc()):
+                        $selected = ($courseID !== null && $courseID === (int)$course['courseID']) ? 'selected' : '';
+                    ?>
+                        <option value="<?= $course['courseID'] ?>"<?= $selected ?>>
+                            <?= htmlspecialchars($course['courseDesc']) ?>
+                        </option>
+                    <?php endwhile; ?>
+                </select>
 
                 <div class="buttons">
                     <button type="submit">Add Student</button>

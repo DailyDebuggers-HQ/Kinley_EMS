@@ -41,7 +41,7 @@ $info = StudentController::studentInfo($conn, $studentID);
                 <input type="hidden" name="studentID" value="<?= htmlspecialchars($studentID) ?>">
 
                 <label for="yearlevel">Select Year Level:</label>
-                <select name="yearlevel" id="yearlevel" onchange="this.form.submit()">
+                <select style="padding:5px; margin: 5px;" name="yearlevel" id="yearlevel" onchange="this.form.submit()">
                     <option value="">All Years</option>
                     <option value="1" <?= ($_GET['yearlevel'] ?? '') == 1 ? 'selected' : '' ?>>Year 1</option>
                     <option value="2" <?= ($_GET['yearlevel'] ?? '') == 2 ? 'selected' : '' ?>>Year 2</option>

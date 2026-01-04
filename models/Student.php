@@ -28,10 +28,25 @@ class Student {
         return $stmt->get_result()->num_rows > 0;
     }
 
-    public static function create($conn, $lastname, $firstname, $middlename, $age) {
-        $stmt = $conn->prepare("INSERT INTO students (lastname, firstname, middlename, age) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("sssi", $lastname, $firstname, $middlename, $age);
-        return $stmt->execute();
+    public static function create($conn, $lastname, $firstname, $middlename, $age, $courseID) {
+        $conn->begin_transaction();
+
+        try{
+            $stmt = $conn->prepare("INSERT INTO students (lastname, firstname, middlename, age) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("sssi", $lastname, $firstname, $middlename, $age);
+            $stmt->execute();
+            $studentID = $stmt->insert_id;
+
+            $stmtProg = $conn->prepare("INSERT INTO student_programs (student_id, courseID) VALUES (?, ?)");
+            $stmtProg->bind_param("ii", $studentID, $courseID);
+            $stmtProg->execute();
+
+            $conn->commit();
+            return true;
+        } catch (Exception $e) {
+            $conn->rollback();
+            return false;
+        }
     }
 
     public static function getStudentInfo($conn, $studentID) {
@@ -54,9 +69,12 @@ class Student {
                 JOIN student_programs sp ON se.studProgID = sp.studProgID
                 JOIN curriculum cu ON se.curID = cu.curID
                 WHERE sp.student_id = ?";
+
         if ($yearLevel) {
             $sql .= " AND cu.yearlevel = ?";
         }
+
+        $sql .= " ORDER BY cu.yearlevel, cu.semester";
 
         $stmt = $conn->prepare($sql);
         if ($yearLevel) {

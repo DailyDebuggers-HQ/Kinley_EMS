@@ -4,7 +4,7 @@ require_once __DIR__ . "/../config/database.php";
 require_once __DIR__ . "/../models/Student.php";
 
 class StudentController {
-    public static function add($conn, $lastname, $firstname, $middlename, $age){
+    public static function add($conn, $lastname, $firstname, $middlename, $age, $courseID){
         if (Student::exists($conn,$lastname,$firstname, $middlename)){
             return [
                 "status"=>"error",
@@ -12,7 +12,7 @@ class StudentController {
             ];
         }
 
-        if (Student::create($conn, $lastname, $firstname, $middlename, $age)){
+        if (Student::create($conn, $lastname, $firstname, $middlename, $age, $courseID)){
             return [
                 "status"=> "success",
                 "message"=> "Student added successfully!"
@@ -20,7 +20,7 @@ class StudentController {
         }
 
         return [
-            "status"=> "Error",
+            "status"=> "error",
             "message"=> "Error adding student."
         ];
     }
