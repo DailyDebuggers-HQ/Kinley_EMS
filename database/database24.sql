@@ -13,23 +13,11 @@ CREATE TABLE students (
 
 CREATE TABLE curriculum (
     curID int auto_increment primary key,
-    subjectCode varchar(8) not null unique,
+    subjectCode varchar(20) not null unique,
     semester varchar(1) not null,
     yearlevel varchar(1) not null,
     subdescription varchar(50) not null,
     units tinyint unsigned not null
-);
-
-CREATE TABLE sub_enrolled (
-    subEnID int auto_increment primary key,
-    studProgID int not null,
-    curID int not null,
-    enrolled_date date default (current_date),
-    midterm varchar(4) default null,
-    final varchar(4) default null,
-
-    constraint fk_sub_enr_studProg foreign key (studProgID) references student_programs(studProgID),
-    constraint fk_sub_enr_cur foreign key (curID) references curriculum(curID)
 );
 
 CREATE TABLE course (
@@ -57,6 +45,18 @@ CREATE TABLE course_curriculum (
 
     foreign key (courseID) references course(courseID),
     foreign key (curID) references curriculum(curID)
+);
+
+CREATE TABLE sub_enrolled (
+    subEnID int auto_increment primary key,
+    studProgID int not null,
+    curID int not null,
+    enrolled_date date default (current_date),
+    midterm varchar(4) default null,
+    final varchar(4) default null,
+
+    constraint fk_sub_enr_studProg foreign key (studProgID) references student_programs(studProgID),
+    constraint fk_sub_enr_cur foreign key (curID) references curriculum(curID)
 );
 
 INSERT INTO students (lastname, firstname, middlename, age) VALUES
