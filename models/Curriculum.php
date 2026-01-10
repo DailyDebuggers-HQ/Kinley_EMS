@@ -5,26 +5,29 @@ require_once __DIR__ . "/../config/database.php";
 
 class Curriculum {
 
-    public static function all($conn, $order = 'ASC', $courseID = null) {
-        $order = strtoupper($order);
-        if ($order !== 'ASC' && $order !== 'DESC'){
-            $order = 'ASC';
+    public static function fetchCurByCourse($conn, $courseID, $order = 'ASC') {
+        $stmt = $conn->prepare(
+            "SELECT cu.subjectCode, cu.subdescription, cu.yearlevel, cu.semester, cu.units, cc.courseID
+            from course_curriculum cc
+            inner join curriculum cu on cc.curID = cu.curID
+            where cc.courseID = ?
+            order by cu.yearlevel $order, cu.semester $order"
+        );
+        $stmt->bind_param("i", $courseID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $grouped = [];
+
+        while($row = $result->fetch_assoc()) {
+            $year = $row['yearlevel'];
+            $semester = $row['semester'];
+
+            $grouped[$year][$semester][] = $row;
         }
 
-        if ($courseID) {
-            $sql = "SELECT cu.* FROM curriculum cu 
-                    JOIN course_curriculum cc ON cu.curID = cc.curID 
-                    WHERE cc.courseID = ? 
-                    ORDER BY cu.yearlevel $order, cu.semester $order";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("i", $courseID);
-            $stmt->execute();
-            return $stmt->get_result();
-        } else {
-            return $conn->query("SELECT * FROM curriculum ORDER BY yearlevel $order");
-        }
+        return $grouped;
     }
-
 
     public static function exists($conn, $subjectCode){
         $stmt= $conn->prepare("SELECT * from curriculum where subjectCode = ?");
@@ -39,4 +42,5 @@ class Curriculum {
         $stmt->bind_param("ssssi", $subjectCode, $semester, $yearlevel, $subdescription, $units);
         return $stmt->execute();
     }
+
 }

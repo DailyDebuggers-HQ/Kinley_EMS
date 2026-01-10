@@ -4,10 +4,20 @@ require_once __DIR__ . "/../../config/database.php";
 require_once __DIR__ . "/../../controllers/StudentController.php";
 
 $studentID = $_GET['studentID'];
-$yearlevel = $_GET['yearlevel'] ?? null;
-$result = StudentController::studentHist($conn, $studentID, $yearlevel);
+if (!$studentID){
+    die("Student ID is required.");
+}
+
 $info = StudentController::studentInfo($conn, $studentID);
 
+$periods = StudentController::getEnrollmentPeriods($conn, $studentID);
+
+$selectedEnrollmentID = $_GET['period'] ?? null;
+$result = null;
+
+if ($selectedEnrollmentID && is_numeric($selectedEnrollmentID) && $selectedEnrollmentID > 0){
+    $result = StudentController::studentHist($conn, $selectedEnrollmentID);
+}
 ?>
 
 <!DOCTYPE html>
@@ -40,39 +50,50 @@ $info = StudentController::studentInfo($conn, $studentID);
             <form method="GET">
                 <input type="hidden" name="studentID" value="<?= htmlspecialchars($studentID) ?>">
 
-                <label for="yearlevel">Select Year Level:</label>
-                <select style="padding:5px; margin: 5px;" name="yearlevel" id="yearlevel" onchange="this.form.submit()">
-                    <option value="">All Years</option>
-                    <option value="1" <?= ($_GET['yearlevel'] ?? '') == 1 ? 'selected' : '' ?>>Year 1</option>
-                    <option value="2" <?= ($_GET['yearlevel'] ?? '') == 2 ? 'selected' : '' ?>>Year 2</option>
-                    <option value="3" <?= ($_GET['yearlevel'] ?? '') == 3 ? 'selected' : '' ?>>Year 3</option>
-                    <option value="4" <?= ($_GET['yearlevel'] ?? '') == 4 ? 'selected' : '' ?>>Year 4</option>
+                <label for="period">Select Semester:</label>
+                <select style="padding:5px; margin: 5px;" name="period" id="period" onchange="this.form.submit()">
+                    <option value="" <?= !$selectedEnrollmentID ? 'selected' : '' ?>>--</option>
+                    <?php foreach ($periods as $p):
+                        if (!$p['enrollmentID']){
+                            continue;
+                        }
+                        $label = ($p['semester'] == 1 ? 'First Semester' : ($p['semester'] == 2 ? 'Second Semester' : 'Summer')) 
+                         . ', ' . $p['academicYear'];
+                        $enrollmentID = $p['enrollmentID'];
+                    ?>
+                    <option value="<?= $enrollmentID ?>" <?= ($selectedEnrollmentID == $enrollmentID) ? 'selected' : '' ?>>
+                        <?= $label ?>
+                    </option>
+                    <?php endforeach; ?>
                 </select>
             </form>
 
-
+            <?php if ($selectedEnrollmentID): ?>
             <table>
                 <tr>
-                    <th>Subjects</th>
+                    <th>Subject Code</th>
                     <th>Description</th>
-                    <th>Semester</th>
                     <th>MidTerm</th>
                     <th>Final</th>
                     <th>Units</th>
                 </tr>
-                <?php 
-                    while ($row = $result->fetch_assoc()):
-                ?>
-                <tr>
-                    <td><?= htmlspecialchars($row['subjectCode']) ?></td>
-                    <td><?= htmlspecialchars($row['subdescription']) ?></td>
-                    <td><?= htmlspecialchars($row['semester']) ?></td>
-                    <td><?= htmlspecialchars($row['midterm']) ?></td>
-                    <td><?= htmlspecialchars($row['final']) ?></td>
-                    <td><?= htmlspecialchars($row['units']) ?></td>
-                </tr>
-                <?php endwhile; ?>
+                <?php if ($result && $result->num_rows > 0):?>
+                    <?php while ($row = $result->fetch_assoc()): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($row['subjectCode']) ?></td>
+                        <td><?= htmlspecialchars($row['subdescription']) ?></td>
+                        <td><?= htmlspecialchars($row['midterm']) ?></td>
+                        <td><?= htmlspecialchars($row['final']) ?></td>
+                        <td><?= htmlspecialchars($row['units']) ?></td>
+                    </tr>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="5" style="text-align: center;">No records found for the selected period.</td>
+                    </tr>
+                <?php endif; ?>
             </table>
+            <?php endif; ?>
         </div>
     </body>
 </html>

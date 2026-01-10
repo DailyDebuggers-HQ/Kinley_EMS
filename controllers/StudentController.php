@@ -29,7 +29,11 @@ class StudentController {
         return Student::getStudentInfo($conn, $studentID);
     }
 
-    public static function studentHist($conn, $studentID) {
-        return Student::studentHistory($conn, $studentID);
+    public static function getEnrollmentPeriods($conn, $studentID) {
+        return Student::getEnrollmentPeriods($conn, $studentID);
+    }
+
+    public static function studentHist($conn, $enrollmentID) {
+        return Student::studentHistory($conn, $enrollmentID);
     }
 }

@@ -61,28 +61,54 @@ class Student {
         return $stmt->get_result();
     }
 
-    public static function studentHistory($conn, $studentID, $yearLevel = null) {
+    public static function getEnrollmentPeriods($conn, $studentID) {
 
-        $yearLevel = $_GET['yearlevel'] ?? null;
-        $sql = "SELECT se.subEnID, cu.subjectCode, cu.subdescription, cu.semester, se.midterm, se.final, cu.units
-                FROM sub_enrolled se
+        $years = [];
+        $res = $conn->query("SELECT academicYear FROM academic_years ORDER BY academicYear asc");
+        while ($row = $res->fetch_assoc()) {
+            $years[] = $row['academicYear'];
+        }
+
+        $enrollments=[];
+
+        $sql = "SELECT se.enrollmentID, ay.academicYear, se.semester
+                FROM student_enrollments se
                 JOIN student_programs sp ON se.studProgID = sp.studProgID
-                JOIN curriculum cu ON se.curID = cu.curID
-                WHERE sp.student_id = ?";
-
-        if ($yearLevel) {
-            $sql .= " AND cu.yearlevel = ?";
-        }
-
-        $sql .= " ORDER BY cu.yearlevel, cu.semester";
-
+                JOIN academic_years ay ON se.acadYearID = ay.acadYearID
+                WHERE sp.student_id = ?
+                ORDER BY ay.academicYear asc, se.semester asc";
         $stmt = $conn->prepare($sql);
-        if ($yearLevel) {
-            $stmt->bind_param("ii", $studentID, $yearLevel);
-        } else {
-            $stmt->bind_param("i", $studentID);
+        $stmt->bind_param("i", $studentID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        while ($row = $result->fetch_assoc()) {
+            $enrollments[$row['academicYear']][$row['semester']] = $row['enrollmentID'];
         }
-        
+
+        $periods = [];
+        foreach ($years as $year) {
+            foreach ([1, 2, 0] as $semester) {
+                $periods[] = [
+                    'academicYear' => $year,
+                    'semester' => $semester,
+                    'enrollmentID' => $enrollments[$year][$semester] ?? null
+                ];
+            }
+        }
+
+        return $periods;
+    }
+
+    public static function studentHistory($conn, $enrollmentID) {
+        $sql = "SELECT cc.courCurID, c.subjectCode, c.subdescription, c.units, g.midterm, g.final
+                FROM grades g
+                JOIN course_curriculum cc ON g.curID = cc.courCurID
+                JOIN curriculum c ON cc.curID = c.curID
+                WHERE g.enrollmentID = ?
+                ORDER BY c.yearlevel asc, c.semester asc";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $enrollmentID);
         $stmt->execute();
         return $stmt->get_result();
     }
