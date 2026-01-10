@@ -69,17 +69,27 @@ CREATE TABLE course_curriculum (
     constraint unique_course_curriculum unique (courseID, curID)
 );
 
-CREATE TABLE sub_enrolled (
-    subEnID int auto_increment primary key,
+CREATE TABLE student_enrollments (
+    enrollmentID int auto_increment primary key,
     studProgID int not null,
-    schedID int not null,
-    enrolled_date date default (current_date),
+    academicYear varchar(9) not null,
+    semester tinyint not null,
+    enrollment_date date default (current_date),
+
+    constraint fk_stud_enr_studProg foreign key (studProgID) references student_programs(studProgID),
+    unique (studProgID, academicYear, semester)
+);
+
+CREATE TABLE grades (
+    gradeID int auto_increment primary key,
+    enrollmentID int not null,
+    curID int not null,
     midterm varchar(4) default null,
     final varchar(4) default null,
 
-    constraint fk_sub_enr_studProg foreign key (studProgID) references student_programs(studProgID),
-    constraint fk_sub_enr_sched foreign key (schedID) references schedule(schedID),
-    constraint uq_student_sched unique (studProgID, schedID)
+    constraint fk_grades_enrollment foreign key (enrollmentID) references student_enrollments(enrollmentID),
+    constraint fk_grades_curriculum foreign key (curID) references course_curriculum(courCurID),
+    constraint uq_enrollment_sub unique (enrollmentID, curID)
 );
 
 INSERT INTO students (lastname, firstname, middlename, age) VALUES
