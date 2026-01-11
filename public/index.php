@@ -13,9 +13,8 @@ $toggleOrder = ($order === "ASC") ? 'desc' : 'asc';
 
 <div class="container">
     <h2>
-        Dashboard
+        Student Management System
     </h2>
-    <p>Welcome to my Simple Enrollment System</p>
 
     <div class="cards">
         <!--<a class="card" href="/enrollment_system/public/students/add_students.php">Add Students</a>
@@ -28,24 +27,27 @@ $toggleOrder = ($order === "ASC") ? 'desc' : 'asc';
         <h3>Students List</h3>
         <table>
             <tr>
+                <th>No.</th>
                 <th>Last Name
                 <a href="?sort=<?= $toggleOrder ?>" style="text-decoration: none; font-size: 0.9em;"><?= ($order === 'ASC') ? '▲' : '▼' ?></a>
                 </th>
                 <th>First Name</th>
                 <th>Middle Name</th>
-                <th>Age</th>
+                <th>Program</th>
                 <th>Action</th>
             </tr>
 
-            <?php 
+            <?php
+                $no = 1;
                 while ($row = $result->fetch_assoc()):
             ?>
 
                 <tr>
+                    <td><?= $no++ ?></td>
                     <td><?= $row['lastname'] ?></td>
                     <td><?= $row['firstname'] ?></td>
                     <td><?= $row['middlename'] ?></td>
-                    <td><?= $row['age'] ?></td>
+                    <td><?= $row['courseName'] ?></td>
                     <td>
                         <a href="/enrollment_system/public/students/student_history.php?studentID=<?= $row['id'] ?>">View History</a>
                     </td>
