@@ -11,7 +11,7 @@ class Curriculum {
             from course_curriculum cc
             inner join curriculum cu on cc.curID = cu.curID
             where cc.courseID = ?
-            order by cu.yearlevel $order, cu.semester $order"
+            order by cu.yearlevel $order, cu.subjectCode $order"
         );
         $stmt->bind_param("i", $courseID);
         $stmt->execute();
