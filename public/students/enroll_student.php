@@ -6,7 +6,7 @@
     $students = $conn->query("SELECT sp.studProgID, s.firstname, s.lastname 
     FROM student_programs sp 
     JOIN students s 
-    ON sp.student_id = s.id");
+    ON sp.student_id = s.studentID");
     $curriculum = $conn->query("SELECT curID, subdescription FROM curriculum");
 
     $studentID="";

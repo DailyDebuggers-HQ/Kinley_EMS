@@ -36,7 +36,7 @@ $toggleOrder = ($order === "ASC") ? 'desc' : 'asc';
             <td><?= $row['middlename'] ?></td>
             <td><?= $row['age'] ?></td>
             <td>
-                <a href="/enrollment_system/public/students/student_history.php?studentID=<?= $row['id'] ?>">View History</a>
+                <a href="/enrollment_system/public/students/student_history.php?studentID=<?= $row['studentID'] ?>">View History</a>
             </td>
         </tr>
         <?php endwhile; ?>

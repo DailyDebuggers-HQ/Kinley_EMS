@@ -20,6 +20,17 @@ if ($resultsql->num_rows > 0) {
     }
 }
 
+$selectedCourseDesc = '';
+
+if($courseFilter){
+    foreach($courses as $course){
+        if($course['courseID'] == $courseFilter){
+            $selectedCourseDesc = $course['courseDesc'];
+            break;
+        }
+    }
+}
+
 $curriculumData = [];
 if ($courseFilter){
     $curriculumData = Curriculum::fetchCurByCourse($conn, $courseFilter, $order);
@@ -92,7 +103,10 @@ if ($courseFilter){
                 <a href='/enrollment_system/public/index.php'>Return to Dashboard</a>
             </div>
 
-            <?php if ($courseFilter): ?>
+            <?php if ($courseFilter && $selectedCourseDesc): ?>
+                <div style="margin-top: 20px; text-align: center;">
+                    <h2><?= $selectedCourseDesc ?></h2>
+                </div>
                 <?php
                     $yearlabels = [
                         1 => 'First Year',

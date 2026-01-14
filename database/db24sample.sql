@@ -4,7 +4,7 @@ use enrollmentSys24samp;
 
 
 CREATE TABLE students (
-    id int auto_increment primary key,
+    studentID int auto_increment primary key,
     lastname varchar(30) not null,
     firstname varchar(30) not null,
     middlename varchar(30),
@@ -54,7 +54,7 @@ CREATE TABLE student_programs (
     end_date date default null,
     status enum('ACTIVE', 'TERMINATED', 'TRANSFERRED') not null default 'ACTIVE',
 
-    foreign key (student_id) references students(id),
+    foreign key (student_id) references students(studentID),
     foreign key (courseID) references course(courseID)
 );
 
@@ -76,15 +76,15 @@ CREATE TABLE academic_years (
 
 CREATE TABLE student_enrollments (
     enrollmentID int auto_increment primary key,
-    studProgID int not null,
+    studEnrollID int not null,
     acadYearID int not null,
     semester tinyint not null,
     enrollment_date date default current_date,
     status enum ('COMPLETED', 'ONGOING') NOT NULL DEFAULT 'ONGOING',
 
-    constraint fk_stud_enr_studProg foreign key (studProgID) references student_programs(studProgID),
+    constraint fk_stud_enr_studProg foreign key (studEnrollID) references student_programs(studProgID),
     constraint fk_acadYear foreign key(acadYearID) references academic_years(acadYearID),
-    unique (studProgID, acadYearID, semester)
+    unique (studEnrollID, acadYearID, semester)
 );
 
 CREATE TABLE grades (
