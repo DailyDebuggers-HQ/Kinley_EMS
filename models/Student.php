@@ -68,7 +68,7 @@ class Student {
         $sql = "SELECT se.enrollmentID, se.semester, ay.academicYear
             FROM student_enrollments se
             JOIN academic_years ay ON se.acadYearID = ay.acadYearID
-            WHERE se.studEnrollID = (SELECT sp.studEnrollID FROM student_programs sp WHERE sp.student_id = ? LIMIT 1)
+            WHERE se.studEnrollID = (SELECT sp.student_id FROM student_programs sp WHERE sp.student_id = ? LIMIT 1)
             ORDER BY ay.academicYear ASC, se.semester ASC";
 
         $stmt = $conn->prepare($sql);
