@@ -10,12 +10,11 @@ class Student {
             $order = 'ASC';
         }
 
-        $sql = "SELECT st.id, st.firstname, st.lastname, st.middlename, st.age, sp.courseID, c.courseName
+        $sql = "SELECT st.studentID, st.firstname, st.lastname, st.middlename, st.age, sp.courseID, c.courseName
                 FROM student_programs sp
-                JOIN students st ON sp.student_id = st.id
+                JOIN students st ON sp.student_id = st.studentID
                 JOIN course c ON sp.courseID = c.courseID
-                ORDER BY st.id $order";
-
+                ORDER BY st.studentID $order";
         return $conn->query($sql);
     }
 
@@ -55,7 +54,7 @@ class Student {
     public static function getStudentInfo($conn, $studentID) {
         $sql = "SELECT st.firstname, st.lastname, st.middlename, co.courseDesc, st.age
                 FROM student_programs sp
-                JOIN students st ON sp.student_id = st.id
+                JOIN students st ON sp.student_id = st.studentID
                 JOIN course co ON sp.courseID = co.courseID
                 WHERE sp.student_id=?";
         $stmt = $conn->prepare($sql);
@@ -69,7 +68,7 @@ class Student {
         $sql = "SELECT se.enrollmentID, se.semester, ay.academicYear
             FROM student_enrollments se
             JOIN academic_years ay ON se.acadYearID = ay.acadYearID
-            WHERE se.studProgID = (SELECT sp.studProgID FROM student_programs sp WHERE sp.student_id = ? LIMIT 1)
+            WHERE se.studEnrollID = (SELECT sp.studEnrollID FROM student_programs sp WHERE sp.student_id = ? LIMIT 1)
             ORDER BY ay.academicYear ASC, se.semester ASC";
 
         $stmt = $conn->prepare($sql);
