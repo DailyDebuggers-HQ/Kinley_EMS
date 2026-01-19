@@ -10,7 +10,7 @@ class Student {
             $order = 'ASC';
         }
 
-        $sql = "SELECT st.studentID, st.firstname, st.lastname, st.middlename, st.age, sp.courseID, c.courseName
+        $sql = "SELECT st.studentID, st.firstname, st.lastname, st.middlename, st.birthdate, sp.courseID, c.courseName
                 FROM student_programs sp
                 JOIN students st ON sp.student_id = st.studentID
                 JOIN course c ON sp.courseID = c.courseID
@@ -52,7 +52,7 @@ class Student {
     }
 
     public static function getStudentInfo($conn, $studentID) {
-        $sql = "SELECT st.firstname, st.lastname, st.middlename, co.courseDesc, st.age
+        $sql = "SELECT st.firstname, st.lastname, st.middlename, co.courseDesc, st.birthdate
                 FROM student_programs sp
                 JOIN students st ON sp.student_id = st.studentID
                 JOIN course co ON sp.courseID = co.courseID
@@ -107,5 +107,46 @@ class Student {
         $stmt->execute();
         $result = $stmt->get_result();
         return $result && $result->num_rows > 0 ? $result->fetch_assoc()['status']: null;
+    }
+
+    public static function getStudentSched ($conn, $enrollmentID){
+        $sql = "SELECT cc.courCurID, c.subjectCode, c.subdescription, s.day, s.start_time, s.end_time, s.room, s.section, c.units
+            FROM student_schedule ss
+            JOIN schedule s ON ss.schedID = s.schedID
+            JOIN course_curriculum cc ON s.courCurID = cc.courCurID
+            JOIN curriculum c ON cc.curID = c.curID
+            WHERE ss.enrollmentID = ?";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $enrollmentID);
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        $rows = [];
+        while ($row = $res->fetch_assoc()) {
+            $rows[] = $row;
+        }
+
+        // Map full day names to abbreviations
+        $dayMap = ['MON'=>'M','TUE'=>'T','WED'=>'W','THU'=>'Th','FRI'=>'F','SAT'=>'S'];
+
+        // Aggregate rows by subject (courCurID)
+        $grouped = [];
+        foreach ($rows as $row) {
+            $id = $row['courCurID'];
+
+            // Format day abbreviation
+            $abbrDay = $dayMap[$row['day']] ?? $row['day'];
+
+            if (!isset($grouped[$id])) {
+                $grouped[$id] = $row;
+                $grouped[$id]['days'] = $abbrDay;
+            } else {
+                $grouped[$id]['days'] .= $abbrDay;
+            }
+        }
+
+        // Return as a simple array
+        return array_values($grouped);
     }
 }
