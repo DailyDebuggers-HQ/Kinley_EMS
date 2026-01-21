@@ -110,11 +110,12 @@ class Student {
     }
 
     public static function getStudentSched ($conn, $enrollmentID){
-        $sql = "SELECT cc.courCurID, c.subjectCode, c.subdescription, s.day, s.start_time, s.end_time, s.room, s.section, c.units
+        $sql = "SELECT cc.courCurID, c.subjectCode, c.subdescription, s.day, s.start_time, s.end_time, s.room, s.section, c.units, sf.price
             FROM student_schedule ss
             JOIN schedule s ON ss.schedID = s.schedID
             JOIN course_curriculum cc ON s.courCurID = cc.courCurID
             JOIN curriculum c ON cc.curID = c.curID
+            JOIN subject_fees sf ON cc.courCurID = sf.courCurID
             WHERE ss.enrollmentID = ?";
 
         $stmt = $conn->prepare($sql);
@@ -148,5 +149,38 @@ class Student {
 
         // Return as a simple array
         return array_values($grouped);
+    }
+
+    public static function getStudentAssessment($conn, $enrollmentID){
+        $stmt = $conn->prepare("SELECT totalAmount FROM student_assessment WHERE enrollmentID = ?");
+        $stmt->bind_param("i", $enrollmentID);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $total = $res->fetch_assoc()['totalAmount'] ?? 0;
+        $stmt->close();
+
+        $stmt = $conn->prepare("SELECT SUM(amountPaid) as totalPaid FROM payments WHERE enrollmentID = ?");
+        $stmt->bind_param("i", $enrollmentID);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $paid = $res->fetch_assoc()['totalPaid'] ?? 0;
+        $stmt->close();
+
+        $stmt = $conn->prepare("SELECT paymentDate, amountPaid from payments where enrollmentID = ? order by paymentDate ASC");
+        $stmt->bind_param("i", $enrollmentID);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $payment = [];
+        while ($row = $res->fetch_assoc()) {
+            $payment[] = $row;
+        }
+        $stmt->close();
+
+        return [
+            'total' => $total,
+            'paid' => $paid,
+            'balance' => $total - $paid,
+            'payments' => $payment
+        ];
     }
 }

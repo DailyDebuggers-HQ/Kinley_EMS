@@ -114,3 +114,35 @@ CREATE TABLE student_schedule (
     constraint fk_studSched_schedule foreign key (schedID) references schedule(schedID),
     constraint uq_enrollment_schedule unique (enrollmentID, schedID)
 );
+
+CREATE TABLE subject_fees (
+    subFeesID int auto_increment primary key,
+    courCurID int not null,
+    acadYearID int not null,
+    semester tinyint not null,
+    price decimal(10,2) not null,
+
+    constraint fk_fee_courseCur foreign key (courCurID) references course_curriculum(courCurID),
+    constraint fk_fee_acadYear foreign key (acadYearID) references academic_years(acadYearID),
+
+    constraint uq_subFee unique (courCurID, acadYearID, semester)
+);
+
+CREATE TABLE student_assessment (
+    studAssessID int auto_increment primary key,
+    enrollmentID int not null,
+    totalAmount decimal(10,2) not null,
+    assessedDate date not null default (current_date),
+
+    constraint fk_studAssess_enrollment foreign key (enrollmentID) references student_enrollments(enrollmentID),
+    constraint uq_enrollment_assessment unique (enrollmentID)
+);
+
+create table payments (
+    paymentID int auto_increment primary key,
+    enrollmentID int not null,
+    paymentDate date not null default (current_date),
+    amountPaid decimal(10,2) not null,
+
+    constraint fk_payment_enrollment foreign key (enrollmentID) references student_enrollments(enrollmentID)
+);
