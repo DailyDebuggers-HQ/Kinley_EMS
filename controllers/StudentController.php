@@ -32,4 +32,12 @@ class StudentController {
     public static function statusVerifier($conn, $enrollmentID) {
         return Student::statusVerifier($conn, $enrollmentID);
     }
+
+    public static function getStudentSched ($conn, $enrollmentID){
+        return Student::getStudentSched($conn, $enrollmentID);
+    }
+    
+    public static function getStudentAssessment($conn, $enrollmentID){
+        return Student::getStudentAssessment($conn, $enrollmentID);
+    }
 }

@@ -19,6 +19,7 @@ $action = $_GET['action'] ?? null;
 
 $history = [];
 $schedule = [];
+$assessment = ['total' => 0, 'paid' => 0, 'balance' => 0, 'payments' => []];
 
 
 $yearlevel = '';
@@ -64,11 +65,14 @@ if ($selectedEnrollmentID && is_numeric($selectedEnrollmentID) && $selectedEnrol
         $schedule = Student::getStudentSched($conn, $selectedEnrollmentID);
         if (!empty($schedule)) {
             $totalUnits = 0;
+            $totalAmount = 0;
             foreach ($schedule as $row) {
                 $totalUnits += $row['units'];
+                $totalAmount += $row['price'];
             }
-        } else {
-            $totalUnits = 0;
+
+            $assessment = StudentController::getStudentAssessment($conn, $selectedEnrollmentID);
+
         }
     }
 }
@@ -144,8 +148,8 @@ if ($selectedEnrollmentID && is_numeric($selectedEnrollmentID) && $selectedEnrol
                     <?php endforeach; ?>
                 </select>
 
-                <button type="submit" onclick = "this.form.action.value='grades'">View Grades</button>
-                <button type="submit" onclick = "this.form.action.value='schedule'">View Schedule</button>
+                <button type="submit" onclick = "this.form.action.value='grades'">Grade Inquiry</button>
+                <button type="submit" onclick = "this.form.action.value='schedule'">Account/Schedule</button>
             </form>
 
             <?php if ($selectedEnrollmentID): 
@@ -196,6 +200,7 @@ if ($selectedEnrollmentID && is_numeric($selectedEnrollmentID) && $selectedEnrol
                             <th>Day</th>
                             <th>Start Time</th>
                             <th>End Time</th>
+                            <th>Amount</th>
                             <th>Room</th>
                             <th>Section</th>
                             <th>Units</th>
@@ -208,6 +213,7 @@ if ($selectedEnrollmentID && is_numeric($selectedEnrollmentID) && $selectedEnrol
                                 <td><?= htmlspecialchars($row['days']) ?></td>
                                 <td><?= htmlspecialchars($row['start_time']) ?></td>
                                 <td><?= htmlspecialchars($row['end_time']) ?></td>
+                                <td><?= htmlspecialchars($row['price']) ?></td>
                                 <td><?= htmlspecialchars($row['room']) ?></td>
                                 <td><?= htmlspecialchars($row['section']) ?></td>
                                 <td><?= htmlspecialchars($row['units']) ?></td>
@@ -215,13 +221,50 @@ if ($selectedEnrollmentID && is_numeric($selectedEnrollmentID) && $selectedEnrol
                             <?php endforeach; ?>
 
                             <tr>
-                                <td colspan="7" style="text-align:right; font-weight:bold;">Total Units:</td>
-                                <td style="font-weight:bold;"><?= $totalUnits ?></td>
+                                <td colspan="5" style="text-align:right; font-weight:bold;">Total Amount:</td>
+                                <td style="font-weight:bold;"><?= $totalAmount ?></td>
+                                <td colspan="2"></td>
+                                <td style="font-weight:bold;">Total Units: <?= $totalUnits ?></td>
                             </tr>
                         <?php endif; ?>
+                    </table>
+
+                    <div style="display: flex; text-align: center; justify-content: center; padding-bottom: 20px;"><h2>ASSESSMENT</h2></div>
+
+                    <table>
+                        <tr>
+                            <th>Date</th>
+                            <th>Total Amount</th>
+                            <th>Amount Paid</th>
+                            <th>Balance</th>
+                        </tr>
+                        <?php
+                        $runningBalance = $assessment['total']; 
+                        foreach ($assessment['payments'] as $payment):
+                            $currentTotal = $runningBalance;
+                            $actualPaid = $payment['amountPaid'];
+                            if ($actualPaid > $runningBalance) {
+                                $actualPaid = $runningBalance; 
+                            }
+
+                            $runningBalance -= $payment['amountPaid'];
+                        ?>
+                        <tr>
+                            <td><?= htmlspecialchars($payment['paymentDate']) ?></td>
+                            <td><?= number_format($currentTotal, 2) ?></td>
+                            <td><?= number_format($actualPaid, 2) ?></td>
+                            <td><?= number_format(max($runningBalance, 0), 2) ?></td>
+                        </tr>
+                        <?php endforeach; ?>
                     </table>
                 <?php endif; ?>
             <?php endif; ?>
         </div>
     </body>
+                        <!--Now, we just have to continue populating the followings:
+                        1. schedule of curriculum
+                        2. student_schedule
+                        3. subject fees
+                        4. student assessments
+                        5. payments -->
 </html>
