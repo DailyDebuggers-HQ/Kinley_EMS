@@ -20,7 +20,7 @@ if(isset($_SESSION['message'])){
 $lastname="";
 $firstname="";
 $middlename="";
-$age="";
+$birthdate="";
 $courseID=null;
 
 
@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST"){
     $lastname = trim($_POST['lastname']);
     $firstname = trim($_POST['firstname']);
     $middlename = $_POST['middlename'];
-    $age = $_POST['age'];
+    $birthdate = $_POST['birthdate'];
     $courseID = intval($_POST['courseID']);
 
     if (!$courseID) {
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST"){
     } 
     else {
 
-        $result = StudentController::add($conn, $lastname, $firstname, $middlename, $age, $courseID);
+        $result = StudentController::add($conn, $lastname, $firstname, $middlename, $birthdate, $courseID);
 
         if ($result['status'] === "success"){
             $_SESSION['message']=$result['message'];
@@ -93,8 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] === "POST"){
                 <input type="text" name="lastname" required value="<?= htmlspecialchars($lastname) ?>"><br>
                 <label>Middle Name:</label><br>
                 <input type="text" name="middlename" value="<?= htmlspecialchars($middlename) ?>"><br>
-                <label>Age:</label>
-                <input type="number" name="age" min = "10" max = "200" required value="<?= htmlspecialchars($age) ?>"><br>
+                <label>Birthdate:</label>
+                <input type="date" name="birthdate" required value="<?= htmlspecialchars($birthdate) ?>"><br>
                 <label>Course:</label>
                 <select name="courseID" required>
                     <option value="" disabled <?= is_null($courseID) ? 'selected' : '' ?>>Select Course</option>

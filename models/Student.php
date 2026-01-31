@@ -31,17 +31,19 @@ class Student {
         return $res && $res->num_rows > 0;
     }
 
-    public static function create($conn, $lastname, $firstname, $middlename, $age, $courseID) {
+    public static function create($conn, $lastname, $firstname, $middlename, $birthdate, $courseID) {
         $conn->begin_transaction();
         try {
-            $stmt = $conn->prepare("INSERT INTO students (lastname, firstname, middlename, age) VALUES (?, ?, ?, ?)");
-            $stmt->bind_param("sssi", $lastname, $firstname, $middlename, $age);
+            $stmt = $conn->prepare("INSERT INTO students (lastname, firstname, middlename, birthdate) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("ssss", $lastname, $firstname, $middlename, $birthdate);
             $stmt->execute();
             $studentID = $stmt->insert_id;
+            $stmt->close();
 
             $stmtProg = $conn->prepare("INSERT INTO student_programs (student_id, courseID) VALUES (?, ?)");
             $stmtProg->bind_param("ii", $studentID, $courseID);
             $stmtProg->execute();
+            $stmtProg->close();
 
             $conn->commit();
             return $studentID;

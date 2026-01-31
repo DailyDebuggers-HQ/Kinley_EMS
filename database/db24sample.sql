@@ -34,7 +34,7 @@ CREATE TABLE academic_years (
 
 CREATE TABLE student_programs (
     studProgID int auto_increment primary key,
-    student_id int not null unique,
+    student_id int not null,
     courseID int not null,
     startDate date not null default (current_date),
     end_date date default null,
