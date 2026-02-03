@@ -4,7 +4,7 @@ require_once __DIR__ . "/../config/database.php";
 
 class Student {
 
-    public static function all($conn, $order = 'ASC') {
+    public static function all($conn, $order = 'ASC', $keyword = null) {
         $order = strtoupper($order);
         if ($order !== 'ASC' && $order !== 'DESC'){
             $order = 'ASC';
@@ -13,9 +13,24 @@ class Student {
         $sql = "SELECT st.studentID, st.firstname, st.lastname, st.middlename, st.birthdate, sp.courseID, c.courseName
                 FROM student_programs sp
                 JOIN students st ON sp.student_id = st.studentID
-                JOIN course c ON sp.courseID = c.courseID
-                ORDER BY st.studentID $order";
-        return $conn->query($sql);
+                JOIN course c ON sp.courseID = c.courseID";
+        
+        if ($keyword) {
+            $sql .= " WHERE st.lastname LIKE ? 
+                    OR st.firstname LIKE ? 
+                    OR st.middlename LIKE ? ";
+        }
+
+        $sql .= " ORDER BY st.studentID $order";
+
+        $stmt = $conn->prepare($sql);
+
+        if ($keyword){
+            $search = "%$keyword%";
+            $stmt->bind_param("sss", $search, $search, $search);
+        }
+        $stmt->execute();
+        return $stmt->get_result();
     }
 
     public static function exists($conn, $lastname, $firstname, $middlename) {
