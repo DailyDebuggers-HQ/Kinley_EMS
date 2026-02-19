@@ -239,7 +239,17 @@ if ($selectedEnrollmentID && is_numeric($selectedEnrollmentID) && $selectedEnrol
                             <th>Balance</th>
                         </tr>
                         <?php
-                        $runningBalance = $assessment['total']; 
+                        $runningBalance = $assessment['total'];
+                        ?>
+
+                        <tr>
+                            <td><?= htmlspecialchars($assessment['assessedDate']) ?></td>
+                            <td><?= number_format($runningBalance, 2) ?></td>
+                            <td><?= number_format(0, 2) ?></td>
+                            <td><?= number_format($runningBalance, 2) ?></td>
+                        </tr>
+
+                        <?php
                         foreach ($assessment['payments'] as $payment):
                             $currentTotal = $runningBalance;
                             $actualPaid = $payment['amountPaid'];

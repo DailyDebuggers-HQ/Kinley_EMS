@@ -169,11 +169,15 @@ class Student {
     }
 
     public static function getStudentAssessment($conn, $enrollmentID){
-        $stmt = $conn->prepare("SELECT totalAmount FROM student_assessment WHERE enrollmentID = ?");
+        $stmt = $conn->prepare("SELECT totalAmount, assessedDate FROM student_assessment WHERE enrollmentID = ?");
         $stmt->bind_param("i", $enrollmentID);
         $stmt->execute();
         $res = $stmt->get_result();
-        $total = $res->fetch_assoc()['totalAmount'] ?? 0;
+
+        $row = $res->fetch_assoc();
+
+        $total = $row['totalAmount'] ?? 0;
+        $assessedDate = $row['assessedDate'] ?? null;
         $stmt->close();
 
         $stmt = $conn->prepare("SELECT SUM(amountPaid) as totalPaid FROM payments WHERE enrollmentID = ?");
@@ -197,7 +201,8 @@ class Student {
             'total' => $total,
             'paid' => $paid,
             'balance' => $total - $paid,
-            'payments' => $payment
+            'payments' => $payment,
+            'assessedDate' => $assessedDate
         ];
     }
 }

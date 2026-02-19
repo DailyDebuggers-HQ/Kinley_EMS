@@ -8,7 +8,7 @@ if (!$studentID || !is_numeric($studentID)) {
     die("Invalid student ID.");
 }
 
-// Get student info and active program
+
 $stmt = $conn->prepare("
     SELECT sp.studProgID, sp.courseID, s.firstname, s.lastname, s.middlename, c.courseName
     FROM student_programs sp
@@ -23,10 +23,10 @@ $student = $stmt->get_result()->fetch_assoc();
 
 if (!$student) die("Active program not found for the student.");
 
-// Academic years
+
 $acadYears = $conn->query("SELECT acadYearID, academicYear FROM academic_years ORDER BY academicYear DESC");
 
-// Subjects
+
 $subjects = [];
 $message = $status = "";
 $selectedAcadYear = $_POST['acadYearID'] ?? '';
@@ -61,7 +61,7 @@ if (isset($_POST['load_subjects'])) {
     }
 }
 
-// Handle enrollment
+
 if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['confirm_enroll'])) {
     try {
         $acadYearID = (int)$selectedAcadYear;
@@ -173,7 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['confirm_enroll'])) {
 
             <button type="button" onclick="window.location.href='/enrollment_system/public/index.php'">Back to Dashboard</button>
 
-            <!-- Load Subjects -->
+            
             <form method="POST">
                 <label>Academic Year</label>
                 <select name="acadYearID" required>
@@ -203,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['confirm_enroll'])) {
                 <button type="submit" name="load_subjects">Load Subjects</button>
             </form>
 
-            <!-- Enroll -->
+            
             <?php if (!empty($subjects)): ?>
             <form method="POST">
                 <input type="hidden" name="acadYearID" value="<?= $selectedAcadYear ?>">
