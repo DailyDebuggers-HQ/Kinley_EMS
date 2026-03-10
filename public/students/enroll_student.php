@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['confirm_enroll'])) {
         );
 
         $status  = $result['status'];
-        $message = $result['message'] . ($result['enrollmentID'] ?? '');
+        $message = $result['message'];
 
     } catch (Exception $e) {
         $status  = "error";

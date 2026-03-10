@@ -91,6 +91,7 @@ $result = Student::all($conn, $order, $search);
 
             <div class="cards">
                 <a class="card" href="/enrollment_system/public/students/add_students.php">Add Students</a>
+                <a class="card" href="/enrollment_system/public/schedule/add_schedule.php">Add Schedule</a>
             </div>
 
             <div class="table-container">
