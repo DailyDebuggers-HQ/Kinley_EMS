@@ -171,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['confirm_enroll'])) {
                 <div class="message <?= $status ?>"><?= htmlspecialchars($message) ?></div>
             <?php endif; ?>
 
-            <button type="button" onclick="window.location.href='/enrollment_system/public/index.php'">Back to Dashboard</button>
+            <button type="button" onclick="window.location.href='/enrollment_system/public/students/index.php'">Back to Student List</button>
 
             
             <form method="POST">

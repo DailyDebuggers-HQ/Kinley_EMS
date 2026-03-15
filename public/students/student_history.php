@@ -100,7 +100,7 @@ if ($selectedEnrollmentID && is_numeric($selectedEnrollmentID) && $selectedEnrol
     <body>
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px;">
             <h1>Enrollment History</h1>
-            <a href="/enrollment_system/public/index.php">Return to Dashboard</a>
+            <a href="/enrollment_system/public/students/index.php">Return to Student List</a>
         </div>
         
         <div class = "student-title">
