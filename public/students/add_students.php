@@ -66,8 +66,14 @@ if ($_SERVER['REQUEST_METHOD'] === "POST"){
             }
 
             .buttons button {
+                border-radius: 5px;
                 font-size: large;
                 cursor: pointer;
+            }
+
+            .buttons button:hover {
+                background-color: #2980b9;
+                color: white;
             }
 
             select {
@@ -89,10 +95,10 @@ if ($_SERVER['REQUEST_METHOD'] === "POST"){
             <form method="POST">
                 <label>First Name:</label><br>
                 <input type="text" name="firstname" required value="<?= htmlspecialchars($firstname) ?>"><br>
-                <label>Last Name:</label><br>
-                <input type="text" name="lastname" required value="<?= htmlspecialchars($lastname) ?>"><br>
                 <label>Middle Name:</label><br>
                 <input type="text" name="middlename" value="<?= htmlspecialchars($middlename) ?>"><br>
+                <label>Last Name:</label><br>
+                <input type="text" name="lastname" required value="<?= htmlspecialchars($lastname) ?>"><br>
                 <label>Birthdate:</label>
                 <input type="date" name="birthdate" required value="<?= htmlspecialchars($birthdate) ?>"><br>
                 <label>Course:</label>
