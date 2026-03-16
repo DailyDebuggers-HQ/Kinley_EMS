@@ -4,25 +4,19 @@ require_once __DIR__ . "/../config/database.php";
 require_once __DIR__ . "/../models/Enrollment.php";
 
 class EnrollmentController {
-    public static function enroll($conn, $studentID, $courseID){
-        if (Enrollment::exists($conn, $studentID, $courseID)){
+    public static function enroll($conn, $studentID, $acadYearID, $semester, $yearlevel, $manualSubjects = null){
+        try{
+            $enrollmentID = Enrollment::enroll($conn, $studentID, $acadYearID, $semester, $yearlevel, $manualSubjects);
+
             return [
-                "status"=> "error",
-                "message"=> "Student is already enrolled in this subject!"
+                "status" => "success",
+                "message" => "Student enrolled successfully.",
+                "enrollmentID" => $enrollmentID
             ];
-        }
-
-        else{
-            if (Enrollment::enroll($conn, $studentID, $courseID)){
-                return [
-                    "status" => "success",
-                    "message" => "Student enrolled successfully!"
-                ];
-            }
-
+        } catch (Exception $e){
             return [
                 "status" => "error",
-                "message" => "Error enrolling student"
+                "message" => $e->getMessage()
             ];
         }
     }

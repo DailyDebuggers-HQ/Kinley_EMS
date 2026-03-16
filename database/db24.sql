@@ -13,9 +13,9 @@ CREATE TABLE students (
 
 CREATE TABLE curriculum (
     curID int auto_increment primary key,
-    subjectCode varchar(20) not null unique,
-    semester varchar(1) not null,
-    yearlevel varchar(1) not null,
+    subjectCode varchar(20) not null,
+    semester tinyint not null,
+    yearlevel tinyint not null,
     subdescription varchar(50) not null,
     units tinyint unsigned not null
 );
@@ -34,7 +34,7 @@ CREATE TABLE academic_years (
 
 CREATE TABLE student_programs (
     studProgID int auto_increment primary key,
-    student_id int not null unique,
+    student_id int not null,
     courseID int not null,
     startDate date not null default (current_date),
     end_date date default null,

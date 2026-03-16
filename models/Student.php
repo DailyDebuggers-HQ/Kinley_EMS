@@ -4,7 +4,7 @@ require_once __DIR__ . "/../config/database.php";
 
 class Student {
 
-    public static function all($conn, $order = 'ASC') {
+    public static function all($conn, $order = 'ASC', $keyword = null) {
         $order = strtoupper($order);
         if ($order !== 'ASC' && $order !== 'DESC'){
             $order = 'ASC';
@@ -13,9 +13,24 @@ class Student {
         $sql = "SELECT st.studentID, st.firstname, st.lastname, st.middlename, st.birthdate, sp.courseID, c.courseName
                 FROM student_programs sp
                 JOIN students st ON sp.student_id = st.studentID
-                JOIN course c ON sp.courseID = c.courseID
-                ORDER BY st.studentID $order";
-        return $conn->query($sql);
+                JOIN course c ON sp.courseID = c.courseID";
+        
+        if ($keyword) {
+            $sql .= " WHERE st.lastname LIKE ? 
+                    OR st.firstname LIKE ? 
+                    OR st.middlename LIKE ? ";
+        }
+
+        $sql .= " ORDER BY st.studentID $order";
+
+        $stmt = $conn->prepare($sql);
+
+        if ($keyword){
+            $search = "%$keyword%";
+            $stmt->bind_param("sss", $search, $search, $search);
+        }
+        $stmt->execute();
+        return $stmt->get_result();
     }
 
     public static function exists($conn, $lastname, $firstname, $middlename) {
@@ -31,17 +46,19 @@ class Student {
         return $res && $res->num_rows > 0;
     }
 
-    public static function create($conn, $lastname, $firstname, $middlename, $age, $courseID) {
+    public static function create($conn, $lastname, $firstname, $middlename, $birthdate, $courseID) {
         $conn->begin_transaction();
         try {
-            $stmt = $conn->prepare("INSERT INTO students (lastname, firstname, middlename, age) VALUES (?, ?, ?, ?)");
-            $stmt->bind_param("sssi", $lastname, $firstname, $middlename, $age);
+            $stmt = $conn->prepare("INSERT INTO students (lastname, firstname, middlename, birthdate) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("ssss", $lastname, $firstname, $middlename, $birthdate);
             $stmt->execute();
             $studentID = $stmt->insert_id;
+            $stmt->close();
 
             $stmtProg = $conn->prepare("INSERT INTO student_programs (student_id, courseID) VALUES (?, ?)");
             $stmtProg->bind_param("ii", $studentID, $courseID);
             $stmtProg->execute();
+            $stmtProg->close();
 
             $conn->commit();
             return $studentID;
@@ -152,11 +169,15 @@ class Student {
     }
 
     public static function getStudentAssessment($conn, $enrollmentID){
-        $stmt = $conn->prepare("SELECT totalAmount FROM student_assessment WHERE enrollmentID = ?");
+        $stmt = $conn->prepare("SELECT totalAmount, assessedDate FROM student_assessment WHERE enrollmentID = ?");
         $stmt->bind_param("i", $enrollmentID);
         $stmt->execute();
         $res = $stmt->get_result();
-        $total = $res->fetch_assoc()['totalAmount'] ?? 0;
+
+        $row = $res->fetch_assoc();
+
+        $total = $row['totalAmount'] ?? 0;
+        $assessedDate = $row['assessedDate'] ?? null;
         $stmt->close();
 
         $stmt = $conn->prepare("SELECT SUM(amountPaid) as totalPaid FROM payments WHERE enrollmentID = ?");
@@ -180,7 +201,8 @@ class Student {
             'total' => $total,
             'paid' => $paid,
             'balance' => $total - $paid,
-            'payments' => $payment
+            'payments' => $payment,
+            'assessedDate' => $assessedDate
         ];
     }
 }

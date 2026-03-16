@@ -1,58 +1,35 @@
 <?php
 
 require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../models/Student.php';
 
-$order = (isset($_GET['sort']) && $_GET['sort'] === 'desc') ? 'DESC' : 'ASC';
-$result = Student::all($conn, $order);
-$toggleOrder = ($order === "ASC") ? 'desc' : 'asc';
 
+$totalStudents = $conn->query("SELECT COUNT(*) as total FROM students")->fetch_assoc()['total'];
+$totalCourses = $conn->query("SELECT COUNT(*) as total FROM course")->fetch_assoc()['total'];
+$totalSchedules = $conn->query("SELECT COUNT(*) as total FROM schedule")->fetch_assoc()['total'];
+
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="container">
-    <h2>
-        Student Management System
-    </h2>
+<h2>Home</h2>
 
-    <div class="cards">
-        <!--<a class="card" href="/enrollment_system/public/students/add_students.php">Add Students</a>
-        <a class="card" href="/enrollment_system/public/curriculum/add_curriculum.php">Add Curriculum</a>
-        <a class="card" href="/enrollment_system/public/course/add_courses.php">Add Courses</a>
-        <a class="card" href="/enrollment_system/public/progress.php">Enroll Students</a>-->
+<div style="display:flex; gap:20px; margin-top:20px;">
+
+    <div style="background:white; padding:20px; border-radius:8px; flex:1;">
+        <h1><?= $totalStudents ?></h1>
+        <p>Total Students</p>
     </div>
 
-    <div class="table-container">
-        <h3>Students List</h3>
-        <table>
-            <tr>
-                <th>No.</th>
-                <th>Last Name
-                <a href="?sort=<?= $toggleOrder ?>" style="text-decoration: none; font-size: 0.9em;"><?= ($order === 'ASC') ? '▲' : '▼' ?></a>
-                </th>
-                <th>First Name</th>
-                <th>Middle Name</th>
-                <th>Program</th>
-                <th>Action</th>
-            </tr>
-
-            <?php
-                $no = 1;
-                while ($row = $result->fetch_assoc()):
-            ?>
-
-                <tr>
-                    <td><?= $no++ ?></td>
-                    <td><?= $row['lastname'] ?></td>
-                    <td><?= $row['firstname'] ?></td>
-                    <td><?= $row['middlename'] ?></td>
-                    <td><?= $row['courseName'] ?></td>
-                    <td>
-                        <a href="/enrollment_system/public/students/student_history.php?studentID=<?= $row['studentID'] ?>">View History</a>
-                    </td>
-                </tr>
-            <?php endwhile; ?>
-        </table>
+    <div style="background:white; padding:20px; border-radius:8px; flex:1;">
+        <h1><?= $totalCourses ?></h1>
+        <p>Total Courses</p>
     </div>
+
+    <div style="background:white; padding:20px; border-radius:8px; flex:1;">
+        <h1><?= $totalSchedules ?></h1>
+        <p>Total Schedules</p>
+    </div>
+
 </div>
+
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>

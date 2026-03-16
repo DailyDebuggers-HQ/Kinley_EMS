@@ -100,7 +100,7 @@ if ($selectedEnrollmentID && is_numeric($selectedEnrollmentID) && $selectedEnrol
     <body>
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px;">
             <h1>Enrollment History</h1>
-            <a href="/enrollment_system/public/index.php">Return to Dashboard</a>
+            <a href="/enrollment_system/public/students/index.php">Return to Student List</a>
         </div>
         
         <div class = "student-title">
@@ -239,7 +239,17 @@ if ($selectedEnrollmentID && is_numeric($selectedEnrollmentID) && $selectedEnrol
                             <th>Balance</th>
                         </tr>
                         <?php
-                        $runningBalance = $assessment['total']; 
+                        $runningBalance = $assessment['total'];
+                        ?>
+
+                        <tr>
+                            <td><?= htmlspecialchars($assessment['assessedDate']) ?></td>
+                            <td><?= number_format($runningBalance, 2) ?></td>
+                            <td><?= number_format(0, 2) ?></td>
+                            <td><?= number_format($runningBalance, 2) ?></td>
+                        </tr>
+
+                        <?php
                         foreach ($assessment['payments'] as $payment):
                             $currentTotal = $runningBalance;
                             $actualPaid = $payment['amountPaid'];
