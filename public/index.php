@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../config/database.php';
 
-/* Dashboard statistics */
+
 $totalStudents = $conn->query("SELECT COUNT(*) as total FROM students")->fetch_assoc()['total'];
 $totalCourses = $conn->query("SELECT COUNT(*) as total FROM course")->fetch_assoc()['total'];
 $totalSchedules = $conn->query("SELECT COUNT(*) as total FROM schedule")->fetch_assoc()['total'];
@@ -11,7 +11,7 @@ $totalSchedules = $conn->query("SELECT COUNT(*) as total FROM schedule")->fetch_
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<h2>Dashboard</h2>
+<h2>Home</h2>
 
 <div style="display:flex; gap:20px; margin-top:20px;">
 
