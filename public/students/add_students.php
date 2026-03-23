@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST"){
 
                 <div class="buttons">
                     <button type="submit">Add Student</button>
-                    <button type="button" onclick="window.location.href='/enrollment_system/public/index.php'">Back to Dashboard</button>
+                    <button type="button" onclick="window.location.href='/enrollment_system/public/students/index.php'">Back to List</button>
                 </div>
             </form>
         </div>
