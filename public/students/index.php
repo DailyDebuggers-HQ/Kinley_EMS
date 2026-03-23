@@ -48,6 +48,27 @@ $result = Student::all($conn, $order, $search);
             .btn-enroll:hover { 
                 background: #27ae60; 
             }
+            .search-btn {
+                border-radius: 4px;
+                padding: 6px 12px;
+                cursor: pointer;
+            }
+            .search-btn:hover {
+                background: #bdc3c7;
+            }
+            .btn-delete { 
+                background: #e74c3c; 
+                color: #fff; 
+                padding: 4px 10px; 
+                border-radius: 4px; 
+                border: none; 
+                cursor: pointer; 
+                font-size: 0.85rem; 
+            }
+
+            .btn-delete:hover { 
+                background: #c0392b; 
+            }
         </style>
     </head>
     <body>
@@ -56,7 +77,7 @@ $result = Student::all($conn, $order, $search);
 
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h3>Students List</h3>
-                <a href='/enrollment_system/public/index.php'>Return to Dashboard</a>
+                <a href='/enrollment_system/public/index.php'>Return to Home</a>
             </div>
 
             <!-- SEARCH FORM -->
@@ -68,7 +89,8 @@ $result = Student::all($conn, $order, $search);
                     value="<?= htmlspecialchars($search ?? '') ?>"
                 >
 
-                <button type="submit">Search</button>
+                <button class="search-btn" type="submit">Search</button>
+                <button onclick="window.location.href='/enrollment_system/public/students/add_students.php'; return false;" class="search-btn" type="button">Add Student</button>
             </form>
 
             <table>
@@ -109,6 +131,10 @@ $result = Student::all($conn, $order, $search);
                         <form action="/enrollment_system/public/students/enroll_student.php" method="GET" class="action-form">
                             <input type="hidden" name="studentID" value="<?= $row['studentID'] ?>"> 
                             <button type="submit" class = "btn btn-enroll">Enroll</button> 
+                        </form> <br>
+                        <form action="delete_student.php" method="POST" class="action-form" onsubmit="return confirm('Are you sure you want to delete this student?');">
+                            <input type="hidden" name="studentID" value="<?= $row['studentID'] ?>">
+                            <button type="submit" class="btn btn-delete">Delete</button>
                         </form>
                     </td>
 

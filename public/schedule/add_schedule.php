@@ -16,7 +16,7 @@ if (isset($_POST['resetPage'])) {
         $_SESSION['yearLevel']
     );
     $_SESSION['scheds'] = [];
-    header("Location: /enrollment_system/public/index.php");
+    header("Location: /enrollment_system/public/students/index.php");
     exit;
 }
 
@@ -104,15 +104,25 @@ $studentID = $_SESSION['studentID'] ?? null;
 
 if ($studentID) {
     $stmt = $conn->prepare("
-        SELECT sp.studProgID, e.enrollmentID, s.firstname, s.middlename, s.lastname, c.courseName, sp.courseID
-        FROM student_programs sp
-        JOIN students s ON sp.student_id = s.studentID
-        JOIN student_enrollments e ON e.studEnrollID = sp.studProgID
-        JOIN course c ON sp.courseID = c.courseID
-        WHERE sp.student_id = ? AND sp.status = 'ACTIVE'
-        LIMIT 1
-    ");
-    $stmt->bind_param("i", $studentID);
+    SELECT sp.studProgID,
+           e.enrollmentID,
+           s.firstname,
+           s.middlename,
+           s.lastname,
+           c.courseName,
+           sp.courseID
+    FROM student_programs sp
+    JOIN students s ON sp.student_id = s.studentID
+    JOIN student_enrollments e 
+        ON e.studEnrollID = sp.studProgID
+    JOIN course c ON sp.courseID = c.courseID
+    WHERE sp.student_id = ?
+      AND sp.status = 'ACTIVE'
+      AND e.acadYearID = ?
+      AND e.semester = ?
+    LIMIT 1
+");
+    $stmt->bind_param("iii", $studentID, $_SESSION['acadYearID'], $_SESSION['semester']);
     $stmt->execute();
     $student = $stmt->get_result()->fetch_assoc();
 
@@ -123,7 +133,44 @@ if ($studentID) {
 }
 
 // ----------------------
-// Add Schedule
+// Auto-load Schedules for the Student's Program/Year/Semester
+// ----------------------
+if ($student && isset($_SESSION['acadYearID'], $_SESSION['semester'], $_SESSION['yearLevel'])) {
+    $stmt = $conn->prepare("
+        SELECT 
+            sc.schedID,
+            cur.subdescription AS subjectCode,
+            sc.day,
+            sc.start_time AS startTime,
+            sc.end_time AS endTime,
+            sc.room,
+            sc.section
+        FROM schedule sc
+        JOIN course_curriculum cc ON sc.courCurID = cc.courCurID
+        JOIN curriculum cur ON cur.curID = cc.curID
+        WHERE cc.courseID = ? AND sc.acadYearID = ? AND sc.semester = ? AND cur.yearlevel = ?
+        ORDER BY cur.subjectCode, sc.section, sc.day, sc.start_time
+    ");
+
+    $stmt->bind_param(
+        "iiii",
+        $student['courseID'],
+        $_SESSION['acadYearID'],
+        $_SESSION['semester'],
+        $_SESSION['yearLevel']
+    );
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $_SESSION['scheds'] = [];
+    while ($row = $result->fetch_assoc()) {
+        $_SESSION['scheds'][$row['schedID']] = $row;
+    }
+}
+
+// ----------------------
+// Add Schedule manually by SchedID
 // ----------------------
 if (isset($_POST['addSchedule'])) {
     $schedID = (int)($_POST['schedID'] ?? 0);
@@ -181,6 +228,9 @@ if (isset($_POST['saveSchedules'])) {
             }
         }
 
+        require_once __DIR__ . '/../../models/Student.php';
+        Student::updateStudentAssessment($conn, $enrollmentID);
+
         $_SESSION['scheds'] = [];
         $message = "$savedCount schedule(s) saved successfully.";
         if ($alreadyExists > 0) {
@@ -196,109 +246,49 @@ if (isset($_POST['saveSchedules'])) {
     <meta charset="UTF-8">
     <title>Schedule Assignment</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-            margin: 0;
-            padding: 20px 0;
-        }
-        .container {
-            width: 850px;
-            margin: auto;
-            background: white;
-            padding: 25px 30px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-            color: #1f2d3d;
-            margin-bottom: 25px;
-        }
-        .form-inline {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        input[type="text"], select {
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 14px;
-            width: 150px;
-        }
-        button {
-            padding: 10px 18px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            transition: 0.3s;
-        }
-        button[name="loadTerm"], button[name="loadStudent"], button[name="addSchedule"] {
-            background-color: #4CAF50; 
-            color: white;
-        }
-        button[name="loadTerm"]:hover, button[name="loadStudent"]:hover, button[name="addSchedule"]:hover {
-            background-color: #45a049;
-        }
-        button[name="changeTerm"], button[name="changeStudent"], button[name="selectYearLevel"] {
-            background-color: #f39c12; 
-            color: white;
-        }
-        button[name="changeTerm"]:hover, button[name="changeStudent"]:hover, button[name="selectYearLevel"]:hover {
-            background-color: #e08e0b;
-        }
-        button[name="saveSchedules"] {
-            background-color: #3498db; 
-            color: white; 
-            margin-top: 10px;
-        }
-        button[name="saveSchedules"]:hover {
-            background-color: #2980b9;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        th, td {
-            padding: 12px;
-            text-align: center;
-        }
-        th {
-            background-color: #1f2d3d;
-            color: white;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        .topRow {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            font-weight: bold;
-            color: #1f2d3d;
-        }
-        .message {
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
+        /* Keep your existing CSS */
+        body { font-family: Arial; background: #f4f6f8; margin: 0; padding: 20px 0; }
+        .container { width: 850px; margin: auto; background: white; padding: 25px 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h2 { text-align:center; color:#1f2d3d; margin-bottom:25px; }
+        .form-inline { display:flex; align-items:center; gap:10px; margin-bottom:15px; flex-wrap:wrap; }
+        input[type="text"], select { padding:10px; border-radius:6px; border:1px solid #ccc; font-size:14px; width:150px; }
+        button { padding:10px 18px; border-radius:6px; border:none; cursor:pointer; font-weight:bold; font-size:14px; transition:0.3s; }
+        button[name="loadTerm"], button[name="loadStudent"], button[name="addSchedule"] { background-color:#4CAF50; color:white; }
+        button[name="changeTerm"], button[name="changeStudent"], button[name="selectYearLevel"] { background-color:#f39c12; color:white; }
+        button[name="saveSchedules"] { background-color:#3498db; color:white; margin-top:10px; }
+        table { width:100%; border-collapse:collapse; margin-top:15px; border-radius:8px; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
+        th, td { padding:12px; text-align:center; }
+        th { background-color:#1f2d3d; color:white; }
+        tr:nth-child(even) { background-color:#f9f9f9; }
+        tr:hover { background-color:#f1f1f1; }
+        .topRow { display:flex; justify-content:space-between; margin-bottom:15px; font-weight:bold; color:#1f2d3d; }
+        .message { font-weight:bold; margin-bottom:15px; }
+        #searchInput { margin-bottom:15px; padding:8px; width:300px; border-radius:6px; border:1px solid #ccc; }
     </style>
+    <script>
+        // Simple table search/filter
+        function searchTable() {
+            const input = document.getElementById('searchInput').value.trim();
+            const table = document.getElementById('schedTable');
+            const rows = table.getElementsByTagName('tr');
+            for (let i=1; i<rows.length; i++) {
+                const schedCell = rows[i].getElementsByTagName('td')[1];
+                if (!input) {
+                    // If input is empty, show all rows
+                    rows[i].style.display = '';
+                } else if (schedCell.innerText === input) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        }
+    </script>
 </head>
 <body>
 
 <form method="POST" style="display:inline;">
-    <button type="submit" name="resetPage">Back to Dashboard</button>
+    <button type="submit" name="resetPage">Back to Student List</button>
 </form>
 
 <div class="container">
@@ -360,7 +350,7 @@ if (isset($_POST['saveSchedules'])) {
         </form>
     <?php endif; ?>
 
-    <!-- Student Info & Add Schedule -->
+    <!-- Student Info & Schedule Table -->
     <?php if ($student && isset($_SESSION['yearLevel'])): ?>
         <div class="topRow">
             <p>Student: <?= htmlspecialchars($student['firstname'].' '.$student['middlename'].' '.$student['lastname']) ?></p>
@@ -368,19 +358,17 @@ if (isset($_POST['saveSchedules'])) {
             <p>Year Level: <?= htmlspecialchars($_SESSION['yearLevel']) ?></p>
         </div>
 
-        <h3>Add Schedule</h3>
-        <form method="POST" class="form-inline">
-            <input type="hidden" name="studentID" value="<?= htmlspecialchars($studentID) ?>">
-            <label>Sched ID</label>
-            <input type="text" name="schedID" required>
-            <button name="addSchedule">Enter</button>
+        <h3>Search Schedules</h3>
+        <form id="searchForm" onsubmit="searchTable(); return false;" class="form-inline">
+            <input type="text" id="searchInput" placeholder="Enter schedID..." style="width:250px;">
+            <button type="button" onclick="searchTable()">Search</button>
         </form>
 
         <form method="POST">
             <input type="hidden" name="studentID" value="<?= htmlspecialchars($studentID) ?>">
             <input type="hidden" name="enrollmentID" value="<?= htmlspecialchars($student['enrollmentID']) ?>">
 
-            <table>
+            <table id="schedTable">
                 <tr>
                     <th>Select</th>
                     <th>SchedID</th>
@@ -391,32 +379,20 @@ if (isset($_POST['saveSchedules'])) {
                     <th>Room</th>
                     <th>Section</th>
                 </tr>
-                <?php foreach ($_SESSION['scheds'] as $sched):
-                    $stmt = $conn->prepare("
-                        SELECT cur.yearlevel
-                        FROM schedule sc
-                        JOIN course_curriculum cc ON sc.courCurID = cc.courCurID
-                        JOIN curriculum cur ON cur.curID = cc.curID
-                        WHERE sc.schedID = ?
-                        LIMIT 1
-                    ");
-                    $stmt->bind_param("i", $sched['schedID']);
-                    $stmt->execute();
-                    $row = $stmt->get_result()->fetch_assoc();
-                    if ($row['yearlevel'] != $_SESSION['yearLevel']) continue;
-                ?>
-                    <tr>
-                        <td><input type="checkbox" name="selectedScheds[]" value="<?= $sched['schedID'] ?>"></td>
-                        <td><?= $sched['schedID'] ?></td>
-                        <td><?= htmlspecialchars($sched['subjectCode']) ?></td>
-                        <td><?= htmlspecialchars($sched['day']) ?></td>
-                        <td><?= htmlspecialchars($sched['startTime']) ?></td>
-                        <td><?= htmlspecialchars($sched['endTime']) ?></td>
-                        <td><?= htmlspecialchars($sched['room']) ?></td>
-                        <td><?= htmlspecialchars($sched['section']) ?></td>
-                    </tr>
+                <?php foreach ($_SESSION['scheds'] as $sched): ?>
+                <tr>
+                    <td><input type="checkbox" name="selectedScheds[]" value="<?= $sched['schedID'] ?>"></td>
+                    <td><?= $sched['schedID'] ?></td>
+                    <td><?= htmlspecialchars($sched['subjectCode']) ?></td>
+                    <td><?= htmlspecialchars($sched['day']) ?></td>
+                    <td><?= htmlspecialchars($sched['startTime']) ?></td>
+                    <td><?= htmlspecialchars($sched['endTime']) ?></td>
+                    <td><?= htmlspecialchars($sched['room']) ?></td>
+                    <td><?= htmlspecialchars($sched['section']) ?></td>
+                </tr>
                 <?php endforeach; ?>
             </table>
+
             <button name="saveSchedules">Save Schedules</button>
         </form>
     <?php endif; ?>

@@ -13,15 +13,16 @@ class Student {
         $sql = "SELECT st.studentID, st.firstname, st.lastname, st.middlename, st.birthdate, sp.courseID, c.courseName
                 FROM student_programs sp
                 JOIN students st ON sp.student_id = st.studentID
-                JOIN course c ON sp.courseID = c.courseID";
+                JOIN course c ON sp.courseID = c.courseID
+                WHERE st.status = 'ACTIVE'";
         
         if ($keyword) {
-            $sql .= " WHERE st.lastname LIKE ? 
+            $sql .= " AND (st.lastname LIKE ? 
                     OR st.firstname LIKE ? 
-                    OR st.middlename LIKE ? ";
+                    OR st.middlename LIKE ? ) ";
         }
 
-        $sql .= " ORDER BY st.studentID $order";
+        $sql .= " ORDER BY st.lastname $order";
 
         $stmt = $conn->prepare($sql);
 
@@ -101,7 +102,7 @@ class Student {
     }
 
     public static function getStudentHistory($conn, $enrollmentID) {
-        $sql = "SELECT cc.courCurID, c.subjectCode, c.subdescription, c.units, g.midterm, g.final
+        $sql = "SELECT g.gradeID, cc.courCurID, c.subjectCode, c.subdescription, c.units, g.midterm, g.final
                 FROM grades g
                 JOIN course_curriculum cc ON g.courCurID = cc.courCurID
                 JOIN curriculum c ON cc.curID = c.curID
@@ -166,6 +167,43 @@ class Student {
 
         // Return as a simple array
         return array_values($grouped);
+    }
+
+    public static function updateStudentAssessment($conn, $enrollmentID){
+        $stmt = $conn->prepare("SELECT SUM(sf.price) as totalAmount 
+        FROM student_schedule ss JOIN schedule s 
+        ON ss.schedID = s.schedID 
+        JOIN subject_fees sf 
+        ON s.courCurID = sf.courCurID 
+        WHERE ss.enrollmentID = ?");
+
+        $stmt->bind_param("i", $enrollmentID);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $totalAmount = $row['totalAmount'] ?? 0;
+
+        $check = $conn->prepare("SELECT 1 FROM student_assessment WHERE enrollmentID = ?");
+        $check->bind_param("i", $enrollmentID);
+        $check->execute();
+        $exists = $check->get_result()->num_rows > 0;
+
+        
+        if ($exists) {
+            $update = $conn->prepare("
+                UPDATE student_assessment 
+                SET totalAmount = ?, assessedDate = CURRENT_DATE 
+                WHERE enrollmentID = ?
+            ");
+            $update->bind_param("di", $totalAmount, $enrollmentID);
+            $update->execute();
+        } else {
+            $insert = $conn->prepare("
+                INSERT INTO student_assessment (enrollmentID, totalAmount) 
+                VALUES (?, ?)
+            ");
+            $insert->bind_param("id", $enrollmentID, $totalAmount);
+            $insert->execute();
+        }
     }
 
     public static function getStudentAssessment($conn, $enrollmentID){

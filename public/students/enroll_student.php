@@ -8,7 +8,9 @@ if (!$studentID || !is_numeric($studentID)) {
     die("Invalid student ID.");
 }
 
-
+/* ===============================
+   GET ACTIVE STUDENT PROGRAM
+================================= */
 $stmt = $conn->prepare("
     SELECT sp.studProgID, sp.courseID, s.firstname, s.lastname, s.middlename, c.courseName
     FROM student_programs sp
@@ -23,59 +25,107 @@ $student = $stmt->get_result()->fetch_assoc();
 
 if (!$student) die("Active program not found for the student.");
 
-
-$acadYears = $conn->query("SELECT acadYearID, academicYear FROM academic_years ORDER BY academicYear DESC");
-
+/* ===============================
+   LOAD ACADEMIC YEARS
+================================= */
+$acadYears = $conn->query("
+    SELECT acadYearID, academicYear 
+    FROM academic_years 
+    ORDER BY academicYear DESC
+");
 
 $subjects = [];
 $message = $status = "";
-$selectedAcadYear = $_POST['acadYearID'] ?? '';
-$selectedSemester = $_POST['semester'] ?? '';
+
+$selectedAcadYear  = $_POST['acadYearID'] ?? '';
+$selectedSemester  = $_POST['semester'] ?? '';
 $selectedYearlevel = $_POST['yearlevel'] ?? '';
-$selectedSubjects = $_POST['subjects'] ?? [];
+$selectedSubjects  = $_POST['subjects'] ?? [];
 
-if (isset($_POST['load_subjects'])) {
-    $semester  = (int)$selectedSemester;
-    $yearlevel = (int)$selectedYearlevel;
+/* ===============================
+   PROGRESSIVE SUBJECT LOADING
+================================= */
+if ($_SERVER['REQUEST_METHOD'] === "POST" && !isset($_POST['confirm_enroll'])) {
 
-    $subStmt = $conn->prepare("
-        SELECT cc.courCurID, cur.subdescription
-        FROM course_curriculum cc
-        JOIN curriculum cur ON cur.curID = cc.curID
-        WHERE cc.courseID = ? AND cur.semester = ? AND cur.yearLevel = ?
-    ");
-    $subStmt->bind_param("iii", $student['courseID'], $semester, $yearlevel);
-    $subStmt->execute();
-    $subjects = $subStmt->get_result()->fetch_all(MYSQLI_ASSOC);
-
-    $check = $conn->prepare("
-        SELECT 1 FROM student_enrollments 
-        WHERE studEnrollID=? AND acadYearID=? AND semester=? LIMIT 1
-    ");
-    $check->bind_param("iii", $student['studProgID'], $selectedAcadYear, $selectedSemester);
-    $check->execute();
-    $check->store_result();
-    if ($check->num_rows > 0) {
+    if (empty($selectedAcadYear)) {
         $status  = "error";
-        $message = "Student is already enrolled in this academic year and semester.";
+        $message = "Please select an academic year first.";
+    } else {
+        // Get latest curriculum revision applicable for the selected academic year
+        $query = "
+            SELECT cc.courCurID, cur.subjectCode, cur.subdescription, cur.units
+            FROM course_curriculum cc
+            JOIN curriculum cur ON cur.curID = cc.curID
+            WHERE cc.courseID = ?
+              AND cc.acadYearID = (
+                  SELECT MAX(cc2.acadYearID)
+                  FROM course_curriculum cc2
+                  WHERE cc2.courseID = ? 
+                    AND cc2.acadYearID <= ?
+              )
+        ";
+
+        $params = [$student['courseID'], $student['courseID'], (int)$selectedAcadYear];
+        $types  = "iii";
+
+        // Apply optional semester filter
+        if (!empty($selectedSemester)) {
+            $query .= " AND cur.semester = ?";
+            $params[] = (int)$selectedSemester;
+            $types .= "i";
+        }
+
+        // Apply optional year level filter
+        if (!empty($selectedYearlevel)) {
+            $query .= " AND cur.yearLevel = ?";
+            $params[] = (int)$selectedYearlevel;
+            $types .= "i";
+        }
+
+        // Prepare and execute query
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $subjects = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+        /* Duplicate enrollment check ONLY if complete selection */
+        if ($selectedAcadYear && $selectedSemester && $selectedYearlevel) {
+            $check = $conn->prepare("
+                SELECT 1 
+                FROM student_enrollments 
+                WHERE studEnrollID = ? 
+                  AND acadYearID = ? 
+                  AND semester = ?
+                LIMIT 1
+            ");
+            $check->bind_param("iii", 
+                $student['studProgID'], 
+                $selectedAcadYear, 
+                $selectedSemester
+            );
+            $check->execute();
+            $check->store_result();
+
+            if ($check->num_rows > 0) {
+                $status  = "error";
+                $message = "Student is already enrolled in this academic year and semester.";
+            }
+        }
     }
 }
-
-
+/* ===============================
+   CONFIRM ENROLLMENT
+================================= */
 if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['confirm_enroll'])) {
-    try {
-        $acadYearID = (int)$selectedAcadYear;
-        $semester   = (int)$selectedSemester;
-        $yearlevel  = (int)$selectedYearlevel;
-        $subjects   = $_POST['subjects'] ?? null;
 
+    try {
         $result = EnrollmentController::enroll(
             $conn,
             $student['studProgID'],
-            $acadYearID,
-            $semester,
-            $yearlevel,
-            $subjects
+            (int)$selectedAcadYear,
+            (int)$selectedSemester,
+            (int)$selectedYearlevel,
+            $_POST['subjects'] ?? null
         );
 
         $status  = $result['status'];
@@ -89,142 +139,129 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['confirm_enroll'])) {
 ?>
 
 <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Enroll Student</title>
-        <style>
-            body { 
-                font-family: Arial; 
-                background: #f9f9f9; 
-                padding: 20px; 
-            }
-            .container { 
-                max-width: 600px;
-                margin: auto; 
-                background: #fff; 
-                padding: 20px; 
-                border-radius: 8px; 
-            }
-            h2 { 
-                text-align: center; 
-                margin-bottom: 5px; 
-            }
-            p { 
-                text-align: center; 
-                margin-bottom: 20px; 
-                font-weight: bold; 
-            }
-            form { 
-                margin-bottom: 20px; 
-            }
-            select, input[type=checkbox], button { 
-                width: 100%; 
-                margin-bottom: 12px; 
-                padding: 8px; 
-            }
-            button { 
-                cursor: pointer; 
-            }
-            .message { 
-                padding: 10px; 
-                margin-bottom: 15px; 
-                border-radius: 5px; 
-                font-weight: bold; 
-            }
-            .success { 
-                background: #d4edda; 
-                color: #155724; 
-            }
-            .error { 
-                background: #f8d7da; 
-                color: #721c24; 
-            }
-            .checkbox-group {
-                margin-bottom: 16px;
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
+<html>
+<head>
+    <title>Enroll Student</title>
+    <style>
+        body { font-family: Arial; background: #f9f9f9; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; }
+        h2, p { text-align: center; }
+        select, button { width: 100%; margin-bottom: 12px; padding: 8px; }
+        .checkbox-group { margin-top: 15px; }
+        .checkbox-group label { display: block; margin-bottom: 8px; }
+        .message { padding: 10px; margin-bottom: 15px; border-radius: 5px; font-weight: bold; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        table {
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
 
-            .checkbox-group label {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                font-size: 15px;
-                cursor: pointer;
-            }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
 
-            .checkbox-group input[type="checkbox"] {
-                width: 18px;
-                height: 18px;
-                accent-color: #4CAF50;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h2><?= htmlspecialchars($student['firstname'] . ' ' . $student['lastname']) ?></h2>
-            <p><?= htmlspecialchars($student['courseName']) ?></p>
+        th {
+            background-color: #f8f9fa;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
 
-            <?php if ($message): ?>
-                <div class="message <?= $status ?>"><?= htmlspecialchars($message) ?></div>
-            <?php endif; ?>
+<div class="container">
 
-            <button type="button" onclick="window.location.href='/enrollment_system/public/students/index.php'">Back to Student List</button>
+    <h2><?= htmlspecialchars($student['firstname'] . ' ' . $student['lastname']) ?></h2>
+    <p><?= htmlspecialchars($student['courseName']) ?></p>
 
-            
-            <form method="POST">
-                <label>Academic Year</label>
-                <select name="acadYearID" required>
-                    <option value="">Select</option>
-                    <?php while ($ay = $acadYears->fetch_assoc()): ?>
-                        <option value="<?= $ay['acadYearID'] ?>" <?= ($selectedAcadYear == $ay['acadYearID']) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($ay['academicYear']) ?>
-                        </option>
-                    <?php endwhile; ?>
-                </select>
-
-                <label>Semester</label>
-                <select name="semester" required>
-                    <option value="">Select</option>
-                    <option value="1" <?= ($selectedSemester == 1) ? 'selected' : '' ?>>First Semester</option>
-                    <option value="2" <?= ($selectedSemester == 2) ? 'selected' : '' ?>>Second Semester</option>
-                </select>
-
-                <label>Year Level</label>
-                <select name="yearlevel" required>
-                    <option value="">Select</option>
-                    <?php for ($i=1; $i<=4; $i++): ?>
-                        <option value="<?= $i ?>" <?= ($selectedYearlevel == $i) ? 'selected' : '' ?>><?= $i ?><?= $i==1?'st':($i==2?'nd':($i==3?'rd':'th')) ?> Year</option>
-                    <?php endfor; ?>
-                </select>
-
-                <button type="submit" name="load_subjects">Load Subjects</button>
-            </form>
-
-            
-            <?php if (!empty($subjects)): ?>
-            <form method="POST">
-                <input type="hidden" name="acadYearID" value="<?= $selectedAcadYear ?>">
-                <input type="hidden" name="semester" value="<?= $selectedSemester ?>">
-                <input type="hidden" name="yearlevel" value="<?= $selectedYearlevel ?>">
-                <input type="hidden" name="confirm_enroll" value="1">
-
-                <h3>Subjects</h3>
-                <div class="checkbox-group">
-                    <?php foreach ($subjects as $sub): ?>
-                        <label>
-                            <input type="checkbox" name="subjects[]" value="<?= $sub['courCurID'] ?>"
-                                <?= in_array($sub['courCurID'], $selectedSubjects) ? 'checked' : '' ?>>
-                            <?= htmlspecialchars($sub['subdescription']) ?>
-                        </label>
-                    <?php endforeach; ?>
-                </div>
-
-                <button type="submit">Enroll Student</button>
-            </form>
-            <?php endif; ?>
+    <?php if ($message): ?>
+        <div class="message <?= $status ?>">
+            <?= htmlspecialchars($message) ?>
         </div>
-    </body>
+    <?php endif; ?>
+
+    <button onclick="window.location.href='/enrollment_system/public/students/index.php'">
+        Back to Student List
+    </button>
+
+    <!-- FILTER FORM -->
+    <form method="POST" id="filterForm">
+
+        <label>Academic Year</label>
+        <select name="acadYearID" onchange="this.form.submit()">
+            <option value="">Select</option>
+            <?php while ($ay = $acadYears->fetch_assoc()): ?>
+                <option value="<?= $ay['acadYearID'] ?>"
+                    <?= ($selectedAcadYear == $ay['acadYearID']) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($ay['academicYear']) ?>
+                </option>
+            <?php endwhile; ?>
+        </select>
+
+        <label>Semester</label>
+        <select name="semester" onchange="this.form.submit()">
+            <option value="">Select</option>
+            <option value="1" <?= ($selectedSemester == 1) ? 'selected' : '' ?>>First Semester</option>
+            <option value="2" <?= ($selectedSemester == 2) ? 'selected' : '' ?>>Second Semester</option>
+        </select>
+
+        <label>Year Level</label>
+        <select name="yearlevel" onchange="this.form.submit()">
+            <option value="">Select</option>
+            <?php for ($i=1; $i<=4; $i++): ?>
+                <option value="<?= $i ?>"
+                    <?= ($selectedYearlevel == $i) ? 'selected' : '' ?>>
+                    <?= $i ?><?= $i==1?'st':($i==2?'nd':($i==3?'rd':'th')) ?> Year
+                </option>
+            <?php endfor; ?>
+        </select>
+    </form>
+
+    <!-- SUBJECT LIST -->
+    <?php if (!empty($subjects)): ?>
+    <form method="POST">
+
+        <input type="hidden" name="acadYearID" value="<?= $selectedAcadYear ?>">
+        <input type="hidden" name="semester" value="<?= $selectedSemester ?>">
+        <input type="hidden" name="yearlevel" value="<?= $selectedYearlevel ?>">
+        <input type="hidden" name="confirm_enroll" value="1">
+
+        <h3>Subjects</h3>
+
+        <table border="1" width="100%" cellpadding="8" cellspacing="0">
+            <thead style="background:#f2f2f2;">
+                <tr>
+                    <th>Select</th>
+                    <th>Subject Code</th>
+                    <th>Description</th>
+                    <th>Units</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($subjects as $sub): ?>
+                    <tr>
+                        <td style="text-align:center;">
+                            <input type="checkbox" 
+                                name="subjects[]" 
+                                value="<?= $sub['courCurID'] ?>"
+                                <?= in_array($sub['courCurID'], $selectedSubjects) ? 'checked' : '' ?>>
+                        </td>
+                        <td><?= htmlspecialchars($sub['subjectCode']) ?></td>
+                        <td><?= htmlspecialchars($sub['subdescription']) ?></td>
+                        <td style="text-align:center;">
+                            <?= htmlspecialchars($sub['units']) ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+
+        <button type="submit">Enroll Student</button>
+    </form>
+    <?php endif; ?>
+
+</div>
+
+</body>
 </html>
