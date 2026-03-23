@@ -8,7 +8,8 @@ CREATE TABLE students (
     lastname varchar(30) not null,
     firstname varchar(30) not null,
     middlename varchar(30),
-    birthdate date not null
+    birthdate date not null,
+    status enum('ACTIVE', 'INACTIVE') not null default 'ACTIVE'
 );
 
 CREATE TABLE curriculum (
@@ -48,11 +49,15 @@ CREATE TABLE course_curriculum (
     courCurID int auto_increment primary key,
     courseID int not null,
     curID int not null,
+    acadYearID int not null,
+    revision int not null default 1,
 
     foreign key (courseID) references course(courseID),
     foreign key (curID) references curriculum(curID),
+    constraint fk_cc_acadYear foreign key (acadYearID) references academic_years(acadYearID),
 
-    constraint unique_course_curriculum unique (courseID, curID)
+    constraint unique_course_curriculum unique (courseID, curID),
+    constraint unique_course_curriculum_year unique (courseID, curID, acadYearID, revision)
 );
 
 CREATE TABLE student_enrollments (

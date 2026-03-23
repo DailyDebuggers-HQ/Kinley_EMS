@@ -1,0 +1,115 @@
+/* Global Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+}
+
+/* Sticky Topbar */
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2563eb;
+}
+
+/* Navigation */
+.nav-menu {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.nav-menu li {
+    position: relative;
+}
+
+.nav-menu a {
+    text-decoration: none;
+    color: #1e293b;
+    font-weight: 500;
+    padding: 8px 0;
+    transition: 0.3s ease;
+}
+
+.nav-menu a:hover {
+    color: #2563eb;
+}
+
+/* Active Link */
+.active a {
+    color: #2563eb;
+    font-weight: 600;
+}
+
+/* Dropdown */
+.dropdown-menu {
+    position: absolute;
+    top: 45px;
+    left: 0;
+    background: white;
+    min-width: 200px;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    padding: 10px 0;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: 0.3s ease;
+    pointer-events: none;
+}
+
+.dropdown-menu li {
+    list-style: none;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 10px 20px;
+    font-size: 14px;
+}
+
+.dropdown-menu a:hover {
+    background: #f1f5f9;
+}
+
+/* Show dropdown smoothly */
+.dropdown:hover .dropdown-menu {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* Logout Button */
+.logout {
+    background: #ef4444;
+    color: white !important;
+    padding: 8px 14px;
+    border-radius: 6px;
+}
+
+.logout:hover {
+    background: #dc2626;
+}
+
+/* Page Content */
+.content {
+    padding: 40px;
+}
