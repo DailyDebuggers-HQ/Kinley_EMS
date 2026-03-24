@@ -191,6 +191,8 @@ if ($isLoggedIn) {
         </div>
 
     <?php endif; ?>
-
+<footer style="text-align:center; padding:20px; background:#1e293b; margin-top:40px;">
+    &copy; <?= date("Y") ?> Enrollment Management System by Jhon Kinley Laviña
+</footer>
 </body>
 </html>
