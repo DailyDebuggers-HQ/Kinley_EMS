@@ -13,7 +13,7 @@ class CurriculumController {
         }
 
         else{
-            if (Curriculum::create($conn, $subjectCode, $semester, $yearlevel, $subdescription, $units)){
+            if (Curriculum::create($conn, $subjectCode, $semester, $yearlevel, $subdescription, $units, null, null)){
                 return [
                     "status" => "success",
                     "message" => "Curriculum added successfully!"
