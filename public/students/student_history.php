@@ -128,7 +128,13 @@ if (isset($_POST['submitGrades']) && !empty($_POST['grades'])) {
         $stmt->execute();
         $stmt->close();
         $message .= " Enrollment marked as COMPLETED!";
-    }
+    } else {
+        // If not all grades are filled, we can optionally set status back to ENROLLED
+        $stmt = $conn->prepare("UPDATE student_enrollments SET status = 'ONGOING' WHERE enrollmentID = ? AND status = 'COMPLETED'");
+        $stmt->bind_param("i", $selectedEnrollmentID);
+        $stmt->execute();
+        $stmt->close();
+        $message .= " Enrollment status updated to ONGOING if it was previously COMPLETED.";}
 }
 ?>
 

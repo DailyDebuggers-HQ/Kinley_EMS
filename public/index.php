@@ -156,7 +156,7 @@ if ($isLoggedIn) {
 
                 <div class="card">
                     <h3>Schedule Management</h3>
-                    <p>Create and organize class schedules with ease.</p>
+                    <p>Create and assign class schedules with ease.</p>
                 </div>
 
                 <div class="card">
